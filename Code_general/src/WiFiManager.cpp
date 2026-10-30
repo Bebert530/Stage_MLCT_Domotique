@@ -2,15 +2,15 @@
 
 WiFiManager::WiFiManager() : 
     _configPath("/wifi.json"),
-    _staSSID("iPhone de Bebert"),
-    _staPass("pouletgalant"),
-    _apSSID("Van-Clim-Local"),
+    _staSSID(""),
+    _staPass(""),
+    _apSSID("Van-Assistant-Local"),
     _apPass("12345678"),
     _apIP(192, 168, 4, 1),
     _apGateway(192, 168, 4, 1),
     _apSubnet(255, 255, 255, 0),
     _staState(STA_STATE_IDLE),
-    _isConfigured(true),
+    _isConfigured(false),
     _isScanning(false),
     _apActive(false),
     _needsDisableAP(false),
@@ -43,7 +43,7 @@ bool WiFiManager::begin(const char* configPath) {
     WiFi.setSleep(false);
     WiFi.setTxPower(WIFI_POWER_19_5dBm);
 
-    // 3. Allumage IMMÉDIAT du point d'accès SoftAP pour un accès instantané garanti (192.168.4.1 / clim.local)
+    // 3. Allumage IMMÉDIAT du point d'accès SoftAP pour un accès instantané garanti (192.168.4.1 / van-assistant.local)
     enableAP();
     setupMDNS();
 
@@ -85,7 +85,7 @@ void WiFiManager::enableAP() {
         Serial.printf("[WiFiManager] Point d'accès Wi-Fi activé : %s\n", _apSSID.c_str());
         Serial.printf("[WiFiManager] Mot de passe Wi-Fi         : %s\n", _apPass.c_str());
         Serial.printf("[WiFiManager] Adresse IP AP              : http://%s/\n", WiFi.softAPIP().toString().c_str());
-        Serial.println("[WiFiManager] Accès mDNS                 : http://clim.local/");
+        Serial.println("[WiFiManager] Accès mDNS                 : http://van-assistant.local/");
     } else {
         Serial.println("[WiFiManager] ERREUR : Impossible d'activer le point d'accès SoftAP !");
     }
@@ -105,9 +105,9 @@ void WiFiManager::disableAP() {
 
 void WiFiManager::setupMDNS() {
     MDNS.end();
-    if (MDNS.begin("clim")) {
+    if (MDNS.begin("van-assistant")) {
         MDNS.addService("http", "tcp", 80);
-        Serial.println("[WiFiManager] Résolveur mDNS actif : http://clim.local/");
+        Serial.println("[WiFiManager] Résolveur mDNS actif : http://van-assistant.local/");
     } else {
         Serial.println("[WiFiManager] Avertissement : échec initialisation mDNS.");
     }
@@ -142,7 +142,7 @@ void WiFiManager::onWiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info) {
             Serial.printf("[WiFiManager] IP Station obtenue (DHCP) : %s\n", WiFi.localIP().toString().c_str());
             Serial.printf("[WiFiManager] Force du signal (RSSI)   : %d dBm\n", WiFi.RSSI());
             Serial.printf("[WiFiManager] Accès réseau du van      : http://%s/\n", WiFi.localIP().toString().c_str());
-            Serial.printf("[WiFiManager] Accès mDNS local         : http://clim.local/\n");
+            Serial.printf("[WiFiManager] Accès mDNS local         : http://van-assistant.local/\n");
             Serial.println("==================================================");
             break;
 
@@ -158,11 +158,11 @@ void WiFiManager::onWiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info) {
             break;
 
         case ARDUINO_EVENT_WIFI_AP_STACONNECTED:
-            Serial.println("[WiFiManager] Nouveau client connecté à l'AP 'Van-Clim-Local'.");
+            Serial.println("[WiFiManager] Nouveau client connecté à l'AP 'Van-Assistant-Local'.");
             break;
 
         case ARDUINO_EVENT_WIFI_AP_STADISCONNECTED:
-            Serial.println("[WiFiManager] Client déconnecté de l'AP 'Van-Clim-Local'.");
+            Serial.println("[WiFiManager] Client déconnecté de l'AP 'Van-Assistant-Local'.");
             break;
 
         default:
@@ -277,7 +277,7 @@ bool WiFiManager::resetSTA() {
     // S'assurer que l'AP est actif pour ne pas perdre l'accès
     enableAP();
     setupMDNS();
-    Serial.println("[WiFiManager] Mode station réinitialisé. Seul le point d'accès 'Van-Clim-Local' est actif.");
+    Serial.println("[WiFiManager] Mode station réinitialisé. Seul le point d'accès 'Van-Assistant-Local' est actif.");
     return true;
 }
 
@@ -371,7 +371,7 @@ String WiFiManager::getStatusJson() {
     doc["ap_active"] = _apActive;
     doc["ap_ssid"] = _apActive ? _apSSID : "";
     doc["ap_ip"] = _apActive ? WiFi.softAPIP().toString() : "0.0.0.0";
-    doc["mdns"] = "http://clim.local";
+    doc["mdns"] = "http://van-assistant.local";
 
     String output;
     serializeJson(doc, output);

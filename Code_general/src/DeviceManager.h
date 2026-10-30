@@ -27,7 +27,9 @@ enum SignalMode {
     MODE_INPUT_DIGITAL  = 2, // Contact sec / Flotteur (INPUT_PULLUP)
     MODE_INPUT_ADC      = 3, // Analogique actif 0-3.3V (ADC1)
     MODE_INPUT_ADC_NTC  = 4, // Sonde température résistive NTC 2 fils (Pont 10k)
-    MODE_INPUT_ONEWIRE  = 5  // Bus numérique 1-Wire
+    MODE_INPUT_ONEWIRE  = 5, // Bus numérique 1-Wire
+    MODE_INPUT_PIR      = 6, // Capteur de mouvement PIR (Active HIGH, 3.3V/5V)
+    MODE_OUTPUT_DIRECT  = 7  // Sortie directe GPIO (Lampe/LED 5V/3.3V alimentée par la carte)
 };
 
 /**
@@ -55,6 +57,7 @@ struct Device {
     int16_t value;          // Valeur PWM (0-255), ADC (0-4095), ou Température en centièmes (ex: 2800 = 28.00°C)
     int8_t pwmChannel;      // Canal LEDC alloué (0-15 pour PWM, -1 sinon)
     bool isCore;            // Équipement système protégé contre suppression
+    bool enabled;           // Équipement actif (pris en compte par la carte et les automatisations)
 };
 
 /**
@@ -110,6 +113,11 @@ public:
      * @brief Modifie l'état d'un équipement
      */
     bool setDeviceState(uint8_t id, uint8_t state, int16_t value = 0);
+
+    /**
+     * @brief Active ou désactive un équipement (ignoré par le hardware et les automatisations si inactif)
+     */
+    bool setDeviceEnabled(uint8_t id, bool enabled);
 
     /**
      * @brief Lit et actualise les capteurs physiques (Digital, ADC, NTC)

@@ -5,7 +5,6 @@ DiagnosticManager::DiagnosticManager()
       _wdtEnabled(false),
       _resetReason(ESP_RST_UNKNOWN),
       _logPath("/diag_logs.json"),
-      _lastAntiCycleActive(false),
       _lastHeapLow(false),
       _lastStaConnected(false),
       _lastCheckMs(0),
@@ -216,15 +215,27 @@ void DiagnosticManager::clearLogs() {
     saveLogs();
 }
 
-void DiagnosticManager::update(DeviceManager& devMgr, SystemManager& sysMgr, ClimateManager& climMgr, WiFiManager& wifiMgr) {
+void DiagnosticManager::update(DeviceManager& devMgr, WiFiManager& wifiMgr) {
     uint32_t nowMs = millis();
     if (nowMs - _lastCheckMs < 1000) return; // Exécution toutes les 1s
     _lastCheckMs = nowMs;
 
-    // 1. Surveillance des capteurs (Déconnexions & Rétablissements)
+    // 1. Surveillance des capteurs (Déconnexions, Rétablissements & Détection PIR)
     std::vector<Device> devs = devMgr.getDevices();
     for (const auto& d : devs) {
         if (d.category == CAT_SENSOR) {
+            if (!d.enabled) continue;
+
+            if (d.mode == MODE_INPUT_PIR) {
+                bool hadPir = (_pirStateMap.find(d.id) != _pirStateMap.end());
+                uint8_t prevPir = hadPir ? _pirStateMap[d.id] : 0;
+                if (d.state == 1 && prevPir == 0) {
+                    addLog("INFO", "Détecteur PIR \"" + d.name + "\" (GPIO " + String(d.gpio) + ") : Mouvement détecté.");
+                }
+                _pirStateMap[d.id] = d.state;
+                continue;
+            }
+
             bool isOk = true;
             if (d.mode == MODE_INPUT_ONEWIRE) {
                 if (d.state == 0 || d.value <= -5000 || d.value >= 12500) {
@@ -255,17 +266,7 @@ void DiagnosticManager::update(DeviceManager& devMgr, SystemManager& sysMgr, Cli
         }
     }
 
-    // 2. Surveillance de la sécurité compresseur
-    bool antiCycleNow = climMgr.isAntiCycleActive();
-    if (antiCycleNow && !_lastAntiCycleActive) {
-        addLog("INFO", "Sécurité Compresseur : Temporisation anti-court-cycle engagée (30 min de repos).");
-        _lastAntiCycleActive = true;
-    } else if (!antiCycleNow && _lastAntiCycleActive) {
-        addLog("INFO", "Sécurité Compresseur : Temporisation achevée. Prêt pour nouveau cycle.");
-        _lastAntiCycleActive = false;
-    }
-
-    // 3. Surveillance de la mémoire vive
+    // 2. Surveillance de la mémoire vive
     bool heapLowNow = (ESP.getFreeHeap() < 20000);
     if (heapLowNow && !_lastHeapLow) {
         addLog("CRITIQUE", "Mémoire RAM disponible faible (" + String(ESP.getFreeHeap()) + " octets).");
@@ -275,7 +276,7 @@ void DiagnosticManager::update(DeviceManager& devMgr, SystemManager& sysMgr, Cli
         _lastHeapLow = false;
     }
 
-    // 4. Surveillance de la connexion Wi-Fi Station
+    // 3. Surveillance de la connexion Wi-Fi Station
     bool staNow = wifiMgr.isStaConnected();
     if (staNow && !_lastStaConnected) {
         addLog("INFO", "Wi-Fi Station : Connecté au réseau \"" + wifiMgr.getStaSSID() + "\" (IP: " + wifiMgr.getStaIP() + ").");
@@ -309,11 +310,11 @@ void DiagnosticManager::restartSystem() {
     ESP.restart();
 }
 
-String DiagnosticManager::getDiagnosticsJson(DeviceManager& devMgr, SystemManager& sysMgr, ClimateManager& climMgr, WiFiManager& wifiMgr) {
+String DiagnosticManager::getDiagnosticsJson(DeviceManager& devMgr, WiFiManager& wifiMgr) {
 #if defined(ARDUINOJSON_VERSION_MAJOR) && (ARDUINOJSON_VERSION_MAJOR >= 7)
     JsonDocument doc;
 #else
-    DynamicJsonDocument doc(12288);
+    DynamicJsonDocument doc(8192);
 #endif
 
     // 1. Matériel & Processeur ESP32
@@ -361,8 +362,6 @@ String DiagnosticManager::getDiagnosticsJson(DeviceManager& devMgr, SystemManage
 
     JsonObject files = fs["files"].to<JsonObject>();
     files["config.json"] = LittleFS.exists("/config.json");
-    files["climate.json"] = LittleFS.exists("/climate.json");
-    files["systems.json"] = LittleFS.exists("/systems.json");
     files["automations.json"] = LittleFS.exists("/automations.json");
     files["wifi.json"] = LittleFS.exists("/wifi.json");
 
@@ -378,18 +377,7 @@ String DiagnosticManager::getDiagnosticsJson(DeviceManager& devMgr, SystemManage
     net["sta_ip"] = wifiMgr.getStaIP();
     net["sta_rssi"] = wifiMgr.getStaRSSI();
 
-    // 4. Régulation & Sécurité Climatisation
-    JsonObject clim = doc["climate"].to<JsonObject>();
-    clim["system_on"] = climMgr.isSystemOn();
-    clim["target_enabled"] = climMgr.isTargetEnabled();
-    clim["target_temp"] = climMgr.getTargetTemp();
-    clim["compressor_mode"] = climMgr.getCompressorModeString();
-    clim["compressor_running"] = climMgr.isCompressorActive();
-    clim["anti_short_cycle_active"] = climMgr.isAntiCycleActive();
-    clim["anti_short_cycle_remaining_sec"] = climMgr.getAntiCycleRemainingSec();
-    clim["cooling_demand"] = climMgr.isCoolingDemand();
-
-    // 5. Santé globale calculée
+    // 4. Santé globale calculée
     bool hasSensorIssue = false;
     std::vector<Device> devs = devMgr.getDevices();
     for (const auto& d : devs) {

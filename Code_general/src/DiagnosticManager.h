@@ -10,8 +10,6 @@
 #include <time.h>
 #include <sys/time.h>
 #include "DeviceManager.h"
-#include "SystemManager.h"
-#include "ClimateManager.h"
 #include "WiFiManager.h"
 
 struct DiagLogEntry {
@@ -39,9 +37,9 @@ public:
     void feedWatchdog();
 
     /**
-     * @brief Surveillance continue des transitions de panne capteurs, compresseur, RAM (appelé dans loop())
+     * @brief Surveillance continue des transitions de panne capteurs, RAM, Wi-Fi (appelé dans loop())
      */
-    void update(DeviceManager& devMgr, SystemManager& sysMgr, ClimateManager& climMgr, WiFiManager& wifiMgr);
+    void update(DeviceManager& devMgr, WiFiManager& wifiMgr);
 
     /**
      * @brief Ajoute un événement horodaté dans le journal avec persistance 48h
@@ -76,7 +74,7 @@ public:
     /**
      * @brief Génère le rapport JSON complet de diagnostic système incluant l'historique 48h
      */
-    String getDiagnosticsJson(DeviceManager& devMgr, SystemManager& sysMgr, ClimateManager& climMgr, WiFiManager& wifiMgr);
+    String getDiagnosticsJson(DeviceManager& devMgr, WiFiManager& wifiMgr);
 
     /**
      * @brief Retourne la raison lisible du dernier redémarrage de l'ESP32
@@ -103,7 +101,7 @@ private:
 
     // Suivi d'état pour détection des transitions (fronts montants / descendants)
     std::map<int, bool> _sensorOkMap;
-    bool _lastAntiCycleActive;
+    std::map<int, uint8_t> _pirStateMap;
     bool _lastHeapLow;
     bool _lastStaConnected;
     uint32_t _lastCheckMs;

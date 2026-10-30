@@ -55,14 +55,59 @@ bool AutomationManager::loadRules() {
     for (JsonObject obj : array) {
         AutomationRule rule;
         rule.id = obj["id"] | 0;
+        rule.name = (const char*)(obj["name"] | (const char*)(obj["title"] | ""));
         rule.enabled = obj["enabled"] | true;
-        rule.triggerId = obj["triggerId"] | 0;
-        rule.conditionValue = (const char*)(obj["conditionValue"] | "ON");
-        rule.op = (const char*)(obj["operator"] | ">");
-        rule.threshold = obj["threshold"] | 0.0f;
-        rule.targetId = obj["targetId"] | 0;
-        rule.actionValue = (const char*)(obj["actionValue"] | "ON");
-        rule.actionPercent = obj["actionPercent"] | 100;
+
+        if (obj["conditions"].is<JsonArray>()) {
+            JsonArray conds = obj["conditions"].as<JsonArray>();
+            for (JsonObject cObj : conds) {
+                AutomationCondition cond;
+                cond.triggerId = cObj["triggerId"] | (cObj["triggerDeviceId"] | 0);
+                cond.conditionValue = (const char*)(cObj["conditionValue"] | "ON");
+                cond.op = (const char*)(cObj["operator"] | (const char*)(cObj["op"] | "BETWEEN"));
+                cond.threshold = cObj["threshold"] | 0.0f;
+                cond.minVal = cObj["minVal"] | (cObj["min"] | 0.0f);
+                cond.maxVal = cObj["maxVal"] | (cObj["max"] | 0.0f);
+                cond.isNumerical = cObj["isNumerical"] | (cond.op == "BETWEEN" || cObj["minVal"].is<float>());
+                if (cond.triggerId > 0) {
+                    rule.conditions.push_back(cond);
+                }
+            }
+        } else if (obj["triggerId"].is<uint8_t>() || obj["triggerDeviceId"].is<uint8_t>()) {
+            AutomationCondition cond;
+            cond.triggerId = obj["triggerId"] | (obj["triggerDeviceId"] | 0);
+            cond.conditionValue = (const char*)(obj["conditionValue"] | "ON");
+            cond.op = (const char*)(obj["operator"] | "BETWEEN");
+            cond.threshold = obj["threshold"] | 0.0f;
+            cond.minVal = obj["minVal"] | (obj["min"] | 0.0f);
+            cond.maxVal = obj["maxVal"] | (obj["max"] | 0.0f);
+            cond.isNumerical = obj["isNumerical"] | (cond.op == "BETWEEN" || obj["minVal"].is<float>());
+            if (cond.triggerId > 0) {
+                rule.conditions.push_back(cond);
+            }
+        }
+
+        if (obj["actions"].is<JsonArray>()) {
+            JsonArray acts = obj["actions"].as<JsonArray>();
+            for (JsonObject aObj : acts) {
+                AutomationAction act;
+                act.targetId = aObj["targetId"] | (aObj["actionDeviceId"] | 0);
+                act.actionValue = (const char*)(aObj["actionValue"] | "ON");
+                act.actionPercent = aObj["actionPercent"] | 100;
+                if (act.targetId > 0) {
+                    rule.actions.push_back(act);
+                }
+            }
+        } else if (obj["targetId"].is<uint8_t>() || obj["actionDeviceId"].is<uint8_t>()) {
+            AutomationAction act;
+            act.targetId = obj["targetId"] | (obj["actionDeviceId"] | 0);
+            act.actionValue = (const char*)(obj["actionValue"] | "ON");
+            act.actionPercent = obj["actionPercent"] | 100;
+            if (act.targetId > 0) {
+                rule.actions.push_back(act);
+            }
+        }
+
         _rules.push_back(rule);
     }
 
@@ -113,10 +158,9 @@ String AutomationManager::getRulesJson() {
     return content.length() > 0 ? content : "{\"rules\":[]}";
 }
 
-#include "ClimateManager.h"
 #include <map>
 
-void AutomationManager::update(DeviceManager& devManager, ClimateManager* climManager) {
+void AutomationManager::update(DeviceManager& devManager) {
     if (!_evalTimer.checkAndReset()) {
         return; // Évaluation toutes les 500ms
     }
@@ -133,89 +177,109 @@ void AutomationManager::update(DeviceManager& devManager, ClimateManager* climMa
     };
     std::map<uint8_t, TargetAction> targetActions;
 
-    // Répertorier tous les actionneurs cibles présents dans les règles activées
-    for (const auto& rule : rulesCopy) {
-        if (!rule.enabled || rule.targetId == 0) continue;
-        if (targetActions.find(rule.targetId) == targetActions.end()) {
-            targetActions[rule.targetId] = TargetAction();
-        }
-    }
-
+    // 1. Répertorier tous les actionneurs cibles présents dans les règles activées
     for (const auto& rule : rulesCopy) {
         if (!rule.enabled) continue;
-
-        Device* trig = devManager.getDeviceById(rule.triggerId);
-        Device* target = devManager.getDeviceById(rule.targetId);
-        if (!trig || !target) continue;
-
-        bool conditionMet = false;
-
-        // 1. Évaluation selon le mode du capteur source
-        if (trig->mode == MODE_INPUT_ONEWIRE || trig->mode == MODE_INPUT_ADC_NTC) {
-            float currentTemp = NAN;
-            if (trig->value != 0) {
-                currentTemp = trig->value / 100.0f;
-            } else if (climManager && !isnan(climManager->getAmbientTemp())) {
-                currentTemp = climManager->getAmbientTemp();
-            }
-
-            if (!isnan(currentTemp)) {
-                if (rule.op == "<") {
-                    conditionMet = (currentTemp < rule.threshold);
-                } else if (rule.op == "=") {
-                    conditionMet = (fabs(currentTemp - rule.threshold) < 0.5f);
-                } else { // ">"
-                    conditionMet = (currentTemp > rule.threshold);
-                }
-            } else {
-                conditionMet = false;
-            }
-        } else if (trig->mode == MODE_INPUT_ADC) {
-            float volts = (trig->value / 4095.0f) * 3.3f;
-            if (rule.op == "<") {
-                conditionMet = (volts < rule.threshold);
-            } else if (rule.op == "=") {
-                conditionMet = (fabs(volts - rule.threshold) < 0.1f);
-            } else { // ">"
-                conditionMet = (volts > rule.threshold);
-            }
-        } else if (trig->mode == MODE_OUTPUT_PWM) {
-            float pct = (trig->value / 255.0f) * 100.0f;
-            if (rule.op == "<") {
-                conditionMet = (pct < rule.threshold);
-            } else if (rule.op == "=") {
-                conditionMet = (fabs(pct - rule.threshold) < 1.0f);
-            } else { // ">"
-                conditionMet = (pct > rule.threshold);
-            }
-        } else if (trig->mode == MODE_INPUT_DIGITAL) {
-            uint8_t desiredState = (rule.conditionValue == "ON") ? 1 : 0;
-            conditionMet = (trig->state == desiredState);
-        } else {
-            uint8_t desiredState = (rule.conditionValue == "ON") ? 1 : 0;
-            conditionMet = (trig->state == desiredState);
-        }
-
-        if (conditionMet) {
-            targetActions[rule.targetId].hasMetRule = true;
-            if (target->mode == MODE_OUTPUT_PWM) {
-                uint8_t pwm = (uint8_t)round((rule.actionPercent / 100.0f) * 255.0f);
-                if (pwm >= targetActions[rule.targetId].desiredPwm) {
-                    targetActions[rule.targetId].desiredPwm = pwm;
-                    targetActions[rule.targetId].desiredState = (pwm > 0) ? 1 : 0;
-                }
-            } else {
-                targetActions[rule.targetId].desiredState = (rule.actionValue == "ON") ? 1 : 0;
+        for (const auto& act : rule.actions) {
+            if (act.targetId == 0) continue;
+            if (targetActions.find(act.targetId) == targetActions.end()) {
+                targetActions[act.targetId] = TargetAction();
             }
         }
     }
 
-    // 2. Application de l'état : activation si condition remplie, extinction si aucune règle n'ordonne la marche
+    // 2. Évaluer chaque règle : TOUTES les conditions de la règle doivent être satisfaites
+    for (const auto& rule : rulesCopy) {
+        if (!rule.enabled) continue;
+        if (rule.conditions.empty() || rule.actions.empty()) continue;
+
+        bool allConditionsMet = true;
+
+        for (const auto& cond : rule.conditions) {
+            Device* trig = devManager.getDeviceById(cond.triggerId);
+            if (!trig || !trig->enabled) {
+                allConditionsMet = false;
+                break;
+            }
+
+            bool condMet = false;
+
+            bool isStateCondition = (cond.op == "STATE" || cond.op == "==" || !cond.isNumerical);
+            if (isStateCondition) {
+                uint8_t desiredState = (cond.conditionValue == "ON" || cond.conditionValue == "1") ? 1 : 0;
+                condMet = (trig->state == desiredState);
+            } else if (trig->mode == MODE_INPUT_ONEWIRE || trig->mode == MODE_INPUT_ADC_NTC) {
+                float currentTemp = trig->value / 100.0f;
+                if (cond.op == "BETWEEN" || (cond.minVal != 0.0f || cond.maxVal != 0.0f)) {
+                    condMet = (currentTemp >= cond.minVal && currentTemp <= cond.maxVal);
+                } else if (cond.op == "<") {
+                    condMet = (currentTemp < cond.threshold);
+                } else if (cond.op == "=") {
+                    condMet = (fabs(currentTemp - cond.threshold) < 0.5f);
+                } else { // ">"
+                    condMet = (currentTemp > cond.threshold);
+                }
+            } else if (trig->mode == MODE_INPUT_ADC) {
+                float volts = (trig->value / 4095.0f) * 3.3f;
+                if (cond.op == "BETWEEN" || (cond.minVal != 0.0f || cond.maxVal != 0.0f)) {
+                    condMet = (volts >= cond.minVal && volts <= cond.maxVal);
+                } else if (cond.op == "<") {
+                    condMet = (volts < cond.threshold);
+                } else if (cond.op == "=") {
+                    condMet = (fabs(volts - cond.threshold) < 0.1f);
+                } else { // ">"
+                    condMet = (volts > cond.threshold);
+                }
+            } else if (trig->mode == MODE_OUTPUT_PWM) {
+                float pct = (trig->value / 255.0f) * 100.0f;
+                if (cond.op == "BETWEEN" || (cond.minVal != 0.0f || cond.maxVal != 0.0f)) {
+                    condMet = (pct >= cond.minVal && pct <= cond.maxVal);
+                } else if (cond.op == "<") {
+                    condMet = (pct < cond.threshold);
+                } else if (cond.op == "=") {
+                    condMet = (fabs(pct - cond.threshold) < 1.0f);
+                } else { // ">"
+                    condMet = (pct > cond.threshold);
+                }
+            } else { // MODE_INPUT_DIGITAL, MODE_INPUT_PIR, MODE_OUTPUT_RELAY
+                uint8_t desiredState = (cond.conditionValue == "ON" || cond.conditionValue == "1") ? 1 : 0;
+                condMet = (trig->state == desiredState);
+            }
+
+            if (!condMet) {
+                allConditionsMet = false;
+                break;
+            }
+        }
+
+        // Si toutes les conditions de la règle sont vérifiées, appliquer toutes ses actions
+        if (allConditionsMet) {
+            for (const auto& act : rule.actions) {
+                Device* target = devManager.getDeviceById(act.targetId);
+                if (!target || !target->enabled) continue;
+
+                targetActions[act.targetId].hasMetRule = true;
+
+                if (target->mode == MODE_OUTPUT_PWM) {
+                    uint8_t pwm = (uint8_t)round((act.actionPercent / 100.0f) * 255.0f);
+                    if (pwm >= targetActions[act.targetId].desiredPwm) {
+                        targetActions[act.targetId].desiredPwm = pwm;
+                        targetActions[act.targetId].desiredState = (pwm > 0) ? 1 : 0;
+                    }
+                } else {
+                    uint8_t st = (act.actionValue == "ON" || act.actionValue == "1") ? 1 : 0;
+                    targetActions[act.targetId].desiredState = st;
+                }
+            }
+        }
+    }
+
+    // 3. Application des états finaux aux actionneurs
     for (const auto& pair : targetActions) {
         uint8_t targetId = pair.first;
         const TargetAction& act = pair.second;
         Device* target = devManager.getDeviceById(targetId);
-        if (!target) continue;
+        if (!target || !target->enabled) continue;
 
         if (act.hasMetRule) {
             if (target->mode == MODE_OUTPUT_PWM) {
@@ -229,16 +293,13 @@ void AutomationManager::update(DeviceManager& devManager, ClimateManager* climMa
             }
         } else {
             // Aucune règle active ne demande la marche de cet actionneur
-            bool climRunning = (climManager && climManager->isSystemOn());
-            if (!climRunning) {
-                if (target->mode == MODE_OUTPUT_PWM) {
-                    if (target->value != 0 || target->state != 0) {
-                        devManager.setDeviceState(target->id, 0, 0);
-                    }
-                } else {
-                    if (target->state != 0) {
-                        devManager.setDeviceState(target->id, 0, 0);
-                    }
+            if (target->mode == MODE_OUTPUT_PWM) {
+                if (target->value != 0 || target->state != 0) {
+                    devManager.setDeviceState(target->id, 0, 0);
+                }
+            } else {
+                if (target->state != 0) {
+                    devManager.setDeviceState(target->id, 0, 0);
                 }
             }
         }

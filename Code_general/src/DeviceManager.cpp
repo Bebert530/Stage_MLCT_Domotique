@@ -73,102 +73,7 @@ bool DeviceManager::begin(const char* configPath) {
 void DeviceManager::createDefaultConfig() {
     xSemaphoreTake(_mutex, portMAX_DELAY);
     _devices.clear();
-
-    // 1. Pompe boucle froide (Relais Core vital)
-    Device dev1;
-    dev1.id = 1;
-    dev1.name = "Pompe boucle froide";
-    dev1.category = CAT_ACTUATOR;
-    dev1.voltage = "12V";
-    dev1.mode = MODE_OUTPUT_RELAY;
-    dev1.type = DEVICE_RELAY;
-    dev1.gpio = 4;
-    dev1.state = 0;
-    dev1.value = 0;
-    dev1.pwmChannel = -1;
-    dev1.isCore = false;
-    _devices.push_back(dev1);
-
-    // 2. Ventilateur / Pulseur Habitacle (PWM sur GPIO 21)
-    Device dev2;
-    dev2.id = 2;
-    dev2.name = "Ventilateur Habitacle";
-    dev2.category = CAT_ACTUATOR;
-    dev2.voltage = "12V";
-    dev2.mode = MODE_OUTPUT_PWM;
-    dev2.type = DEVICE_PWM;
-    dev2.gpio = 21;
-    dev2.state = 0;
-    dev2.value = 0;
-    dev2.pwmChannel = allocatePwmChannel();
-    dev2.isCore = false;
-    _devices.push_back(dev2);
-
-    // 3. Spot Salon (Relais)
-    Device dev3;
-    dev3.id = 3;
-    dev3.name = "Spot Salon";
-    dev3.category = CAT_ACTUATOR;
-    dev3.voltage = "12V";
-    dev3.mode = MODE_OUTPUT_RELAY;
-    dev3.type = DEVICE_RELAY;
-    dev3.gpio = 23;
-    dev3.state = 0;
-    dev3.value = 0;
-    dev3.pwmChannel = -1;
-    dev3.isCore = false;
-    _devices.push_back(dev3);
-
-    // 4. Sonde Température Air (1-Wire DS18B20 sur GPIO 19)
-    Device dev4;
-    dev4.id = 4;
-    dev4.name = "Sonde Température Air";
-    dev4.category = CAT_SENSOR;
-    dev4.voltage = "3.3V";
-    dev4.mode = MODE_INPUT_ONEWIRE;
-    dev4.type = DEVICE_RELAY;
-    dev4.gpio = 19;
-    dev4.state = 0;
-    dev4.value = 0;
-    dev4.pwmChannel = -1;
-    dev4.isCore = false;
-    _devices.push_back(dev4);
-
-    // 5. Compresseur Glacière (Relais 12V GPIO 22)
-    Device dev5;
-    dev5.id = 5;
-    dev5.name = "Compresseur Glacière";
-    dev5.category = CAT_ACTUATOR;
-    dev5.voltage = "12V";
-    dev5.mode = MODE_OUTPUT_RELAY;
-    dev5.type = DEVICE_RELAY;
-    dev5.gpio = 22;
-    dev5.state = 0;
-    dev5.value = 0;
-    dev5.pwmChannel = -1;
-    dev5.isCore = false;
-    _devices.push_back(dev5);
-
-    // 6. Sonde Température Eau (1-Wire DS18B20 sur GPIO 5)
-    Device dev6;
-    dev6.id = 6;
-    dev6.name = "Sonde Température Eau";
-    dev6.category = CAT_SENSOR;
-    dev6.voltage = "3.3V";
-    dev6.mode = MODE_INPUT_ONEWIRE;
-    dev6.type = DEVICE_RELAY;
-    dev6.gpio = 5;
-    dev6.state = 0;
-    dev6.value = 0;
-    dev6.pwmChannel = -1;
-    dev6.isCore = false;
-    _devices.push_back(dev6);
-
     xSemaphoreGive(_mutex);
-
-    for (auto& dev : _devices) {
-        setupHardware(dev);
-    }
 
     saveConfig();
 }
@@ -230,6 +135,7 @@ bool DeviceManager::loadConfig() {
         dev.state = obj["state"] | 0;
         dev.value = obj["value"] | 0;
         dev.isCore = obj["isCore"] | false;
+        dev.enabled = obj["enabled"] | true;
 
         if (dev.mode == MODE_OUTPUT_PWM) {
             dev.pwmChannel = allocatePwmChannel();
@@ -278,6 +184,7 @@ bool DeviceManager::saveConfig() {
         obj["state"] = dev.state;
         obj["value"] = dev.value;
         obj["isCore"] = dev.isCore;
+        obj["enabled"] = dev.enabled;
     }
 
     File file = LittleFS.open(_configPath.c_str(), "w");
@@ -365,7 +272,7 @@ int8_t DeviceManager::suggestPin(SignalMode mode) {
     const std::vector<uint8_t>* pool = &SAFE_OUTPUT_PINS;
     if (mode == MODE_INPUT_ADC || mode == MODE_INPUT_ADC_NTC) {
         pool = &SAFE_ADC1_PINS;
-    } else if (mode == MODE_INPUT_DIGITAL || mode == MODE_INPUT_ONEWIRE) {
+    } else if (mode == MODE_INPUT_DIGITAL || mode == MODE_INPUT_ONEWIRE || mode == MODE_INPUT_PIR) {
         pool = &SAFE_PULLUP_PINS;
     }
 
@@ -422,10 +329,10 @@ uint8_t DeviceManager::generateUniqueId() {
 void DeviceManager::setupHardware(Device& dev) {
     if (!isPinSafe(dev.gpio)) return;
 
-    if (dev.mode == MODE_OUTPUT_RELAY) {
+    if (dev.mode == MODE_OUTPUT_RELAY || dev.mode == MODE_OUTPUT_DIRECT) {
         pinMode(dev.gpio, OUTPUT);
         digitalWrite(dev.gpio, dev.state ? HIGH : LOW);
-        Serial.printf("[Hardware] Relais '%s' sur GPIO %d (état: %d)\n", dev.name.c_str(), dev.gpio, dev.state);
+        Serial.printf("[Hardware] Sortie '%s' sur GPIO %d (mode: %s, état: %d)\n", dev.name.c_str(), dev.gpio, signalModeToString(dev.mode).c_str(), dev.state);
     } else if (dev.mode == MODE_OUTPUT_PWM) {
         if (dev.pwmChannel < 0) {
             dev.pwmChannel = allocatePwmChannel();
@@ -448,6 +355,9 @@ void DeviceManager::setupHardware(Device& dev) {
     } else if (dev.mode == MODE_INPUT_DIGITAL || dev.mode == MODE_INPUT_ONEWIRE) {
         pinMode(dev.gpio, INPUT_PULLUP);
         Serial.printf("[Hardware] Capteur Digital '%s' sur GPIO %d (INPUT_PULLUP)\n", dev.name.c_str(), dev.gpio);
+    } else if (dev.mode == MODE_INPUT_PIR) {
+        pinMode(dev.gpio, INPUT);
+        Serial.printf("[Hardware] Capteur PIR '%s' sur GPIO %d (INPUT)\n", dev.name.c_str(), dev.gpio);
     } else if (dev.mode == MODE_INPUT_ADC || dev.mode == MODE_INPUT_ADC_NTC) {
         pinMode(dev.gpio, INPUT);
         Serial.printf("[Hardware] Capteur ADC/NTC '%s' sur GPIO %d (INPUT)\n", dev.name.c_str(), dev.gpio);
@@ -469,7 +379,7 @@ void DeviceManager::releaseHardware(Device& dev) {
 #endif
         freePwmChannel(dev.pwmChannel);
         dev.pwmChannel = -1;
-    } else if (dev.mode == MODE_OUTPUT_RELAY) {
+    } else if (dev.mode == MODE_OUTPUT_RELAY || dev.mode == MODE_OUTPUT_DIRECT) {
         digitalWrite(dev.gpio, LOW);
     }
 
@@ -481,7 +391,7 @@ void DeviceManager::releaseHardware(Device& dev) {
 void DeviceManager::applyHardwareState(const Device& dev) {
     if (!isPinSafe(dev.gpio)) return;
 
-    if (dev.mode == MODE_OUTPUT_RELAY) {
+    if (dev.mode == MODE_OUTPUT_RELAY || dev.mode == MODE_OUTPUT_DIRECT) {
         pinMode(dev.gpio, OUTPUT);
         digitalWrite(dev.gpio, dev.state ? HIGH : LOW);
     } else if (dev.mode == MODE_OUTPUT_PWM) {
@@ -559,6 +469,7 @@ bool DeviceManager::saveDevice(uint8_t id, const String& name, DeviceCategory ca
     newDev.state = 0;
     newDev.value = 0;
     newDev.isCore = isCore;
+    newDev.enabled = true;
     newDev.pwmChannel = -1;
 
     _devices.push_back(newDev);
@@ -612,6 +523,31 @@ bool DeviceManager::setDeviceState(uint8_t id, uint8_t state, int16_t value) {
     return true;
 }
 
+bool DeviceManager::setDeviceEnabled(uint8_t id, bool enabled) {
+    xSemaphoreTake(_mutex, portMAX_DELAY);
+    Device* dev = getDeviceById(id);
+    if (!dev) {
+        xSemaphoreGive(_mutex);
+        return false;
+    }
+
+    dev->enabled = enabled;
+    if (!enabled) {
+        // Couper le hardware si c'est un actionneur
+        if (dev->category == CAT_ACTUATOR) {
+            dev->state = 0;
+            dev->value = 0;
+            applyHardwareState(*dev);
+        }
+    } else {
+        setupHardware(*dev);
+    }
+
+    xSemaphoreGive(_mutex);
+    saveConfig();
+    return true;
+}
+
 void DeviceManager::updateHardwareTests() {
     if (!_testActive) return;
 
@@ -636,7 +572,7 @@ void DeviceManager::updateHardwareTests() {
 #endif
                 pinMode(_testGpio, OUTPUT);
                 digitalWrite(_testGpio, LOW);
-            } else if (_testMode == MODE_OUTPUT_RELAY) {
+            } else if (_testMode == MODE_OUTPUT_RELAY || _testMode == MODE_OUTPUT_DIRECT) {
                 pinMode(_testGpio, OUTPUT);
                 digitalWrite(_testGpio, LOW);
             }
@@ -661,13 +597,19 @@ void DeviceManager::updateSensors() {
     std::map<uint8_t, std::vector<uint8_t>> onewirePinToIds; // gpio -> list of device IDs
 
     for (auto& dev : _devices) {
-        if (dev.category != CAT_SENSOR) continue;
+        if (dev.category != CAT_SENSOR || !dev.enabled) continue;
 
         if (dev.mode == MODE_INPUT_DIGITAL) {
             pinMode(dev.gpio, INPUT_PULLUP);
             int val = digitalRead(dev.gpio);
             // LOW = contact fermé = 1, HIGH = contact ouvert = 0
             dev.state = (val == LOW) ? 1 : 0;
+            dev.value = dev.state;
+        } else if (dev.mode == MODE_INPUT_PIR) {
+            pinMode(dev.gpio, INPUT);
+            int val = digitalRead(dev.gpio);
+            // HIGH = mouvement détecté = 1, LOW = aucun mouvement = 0
+            dev.state = (val == HIGH) ? 1 : 0;
             dev.value = dev.state;
         } else if (dev.mode == MODE_INPUT_ADC) {
             int raw = analogRead(dev.gpio);
@@ -740,7 +682,7 @@ DeviceTestResult DeviceManager::testPinDirect(uint8_t gpio, SignalMode mode, uin
 
     Serial.printf("[Test] Test direct sur GPIO %d, mode %d, durée %d ms\n", gpio, mode, durationMs);
 
-    if (mode == MODE_OUTPUT_RELAY) {
+    if (mode == MODE_OUTPUT_RELAY || mode == MODE_OUTPUT_DIRECT) {
         xSemaphoreTake(_mutex, portMAX_DELAY);
         _testActive = true;
         _testDeviceId = 0;
@@ -754,7 +696,7 @@ DeviceTestResult DeviceManager::testPinDirect(uint8_t gpio, SignalMode mode, uin
         result.success = true;
         result.rawValue = 1;
         result.voltageValue = 3.3f;
-        result.message = "Impulsion 3s lancée : Relais activé.";
+        result.message = (mode == MODE_OUTPUT_DIRECT) ? "Impulsion 3s lancée : Sortie directe 5V/3.3V activée." : "Impulsion 3s lancée : Relais activé.";
     } else if (mode == MODE_OUTPUT_PWM) {
         xSemaphoreTake(_mutex, portMAX_DELAY);
         _testActive = true;
@@ -813,6 +755,18 @@ DeviceTestResult DeviceManager::testPinDirect(uint8_t gpio, SignalMode mode, uin
         } else {
             result.message = "Contact OUVERT (3.3V détecté / Tirage haut Pull-up)";
         }
+    } else if (mode == MODE_INPUT_PIR) {
+        pinMode(gpio, INPUT);
+        delay(10);
+        int val = digitalRead(gpio);
+        result.success = true;
+        result.rawValue = val;
+        result.voltageValue = (val == HIGH) ? 3.3f : 0.0f;
+        if (val == HIGH) {
+            result.message = "MOUVEMENT DÉTECTÉ (3.3V / Signal HIGH sur GPIO " + String(gpio) + ")";
+        } else {
+            result.message = "Aucun mouvement détecté (0V / Signal LOW sur GPIO " + String(gpio) + ")";
+        }
     } else if (mode == MODE_INPUT_ADC || mode == MODE_INPUT_ADC_NTC) {
         pinMode(gpio, INPUT);
         delay(10);
@@ -861,7 +815,7 @@ DeviceTestResult DeviceManager::testDevice(uint8_t id, uint16_t durationMs) {
     res.rawValue = 0;
     res.voltageValue = 0.0f;
 
-    if (mode == MODE_OUTPUT_RELAY) {
+    if (mode == MODE_OUTPUT_RELAY || mode == MODE_OUTPUT_DIRECT) {
         xSemaphoreTake(_mutex, portMAX_DELAY);
         _testActive = true;
         _testDeviceId = id;
@@ -877,7 +831,7 @@ DeviceTestResult DeviceManager::testDevice(uint8_t id, uint16_t durationMs) {
 
         res.rawValue = 1;
         res.voltageValue = 3.3f;
-        res.message = "Impulsion 3s lancée : Relais activé.";
+        res.message = (mode == MODE_OUTPUT_DIRECT) ? "Impulsion 3s lancée : Sortie directe 5V/3.3V activée." : "Impulsion 3s lancée : Relais activé.";
     } else if (mode == MODE_OUTPUT_PWM) {
         xSemaphoreTake(_mutex, portMAX_DELAY);
         _testActive = true;
@@ -981,6 +935,7 @@ String DeviceManager::getDevicesJson() {
         obj["state"] = dev.state;
         obj["value"] = dev.value;
         obj["isCore"] = dev.isCore;
+        obj["enabled"] = dev.enabled;
     }
 
     String output;
@@ -1030,7 +985,9 @@ String DeviceManager::categoryToString(DeviceCategory cat) {
 
 SignalMode DeviceManager::stringToSignalMode(const String& str) {
     if (str.equalsIgnoreCase("OUTPUT_PWM") || str.equalsIgnoreCase("PWM")) return MODE_OUTPUT_PWM;
+    if (str.equalsIgnoreCase("OUTPUT_DIRECT") || str.equalsIgnoreCase("DIRECT") || str.equalsIgnoreCase("OUTPUT_GPIO")) return MODE_OUTPUT_DIRECT;
     if (str.equalsIgnoreCase("INPUT_DIGITAL") || str.equalsIgnoreCase("DIGITAL")) return MODE_INPUT_DIGITAL;
+    if (str.equalsIgnoreCase("INPUT_PIR") || str.equalsIgnoreCase("PIR") || str.equalsIgnoreCase("MOTION")) return MODE_INPUT_PIR;
     if (str.equalsIgnoreCase("INPUT_ADC_NTC") || str.equalsIgnoreCase("ADC_NTC") || str.equalsIgnoreCase("NTC") || str.equalsIgnoreCase("ntc_passive")) return MODE_INPUT_ADC_NTC;
     if (str.equalsIgnoreCase("INPUT_ADC") || str.equalsIgnoreCase("ADC") || str.equalsIgnoreCase("ANALOG") || str.equalsIgnoreCase("analog_active")) return MODE_INPUT_ADC;
     if (str.equalsIgnoreCase("INPUT_ONEWIRE") || str.equalsIgnoreCase("ONEWIRE")) return MODE_INPUT_ONEWIRE;
@@ -1040,7 +997,9 @@ SignalMode DeviceManager::stringToSignalMode(const String& str) {
 String DeviceManager::signalModeToString(SignalMode mode) {
     switch (mode) {
         case MODE_OUTPUT_PWM:    return "OUTPUT_PWM";
+        case MODE_OUTPUT_DIRECT: return "OUTPUT_DIRECT";
         case MODE_INPUT_DIGITAL: return "INPUT_DIGITAL";
+        case MODE_INPUT_PIR:     return "INPUT_PIR";
         case MODE_INPUT_ADC:     return "INPUT_ADC";
         case MODE_INPUT_ADC_NTC: return "INPUT_ADC_NTC";
         case MODE_INPUT_ONEWIRE: return "INPUT_ONEWIRE";

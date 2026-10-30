@@ -7,22 +7,40 @@
 #include "TimerUtil.h"
 #include "DeviceManager.h"
 
-class ClimateManager; // Déclaration anticipée
-
 /**
- * @struct AutomationRule
- * @brief Représentation d'une règle d'automatisation (SI ... EST ... ALORS ...)
+ * @struct AutomationCondition
+ * @brief Condition élémentaire d'une règle
  */
-struct AutomationRule {
-    uint8_t id;             // Identifiant unique de la règle
-    bool enabled;           // Règle activée ou désactivée
+struct AutomationCondition {
     uint8_t triggerId;      // ID de l'équipement déclencheur (source)
     String conditionValue;  // "ON" ou "OFF" pour Tout-ou-Rien
-    String op;              // "<", ">", "=" pour analogique / PWM / température
-    float threshold;        // Seuil numérique (°C, Volts, %, etc.)
+    String op;              // "<", ">", "=", "BETWEEN", "STATE"
+    float threshold;        // Seuil numérique legacy (°C, Volts, %, etc.)
+    float minVal = 0.0f;    // Seuil minimum de la plage fermée [Min, Max]
+    float maxVal = 0.0f;    // Seuil maximum de la plage fermée [Min, Max]
+    bool isNumerical = false; // Vrai si condition basée sur une plage numérique
+};
+
+/**
+ * @struct AutomationAction
+ * @brief Action élémentaire à exécuter sur un actionneur
+ */
+struct AutomationAction {
     uint8_t targetId;       // ID de l'équipement cible (actionneur)
     String actionValue;     // "ON" ou "OFF" pour relais
     uint8_t actionPercent;  // 0 à 100% pour variateur PWM
+};
+
+/**
+ * @struct AutomationRule
+ * @brief Représentation d'une règle d'automatisation (SI [conditions] ALORS [actions])
+ */
+struct AutomationRule {
+    uint8_t id;             // Identifiant unique de la règle
+    String name;            // Intitulé de la règle
+    bool enabled;           // Règle activée ou désactivée
+    std::vector<AutomationCondition> conditions;
+    std::vector<AutomationAction> actions;
 };
 
 /**
@@ -42,9 +60,8 @@ public:
     /**
      * @brief Évalue périodiquement les règles actives et pilote les équipements
      * @param devManager Référence vers le DeviceManager
-     * @param climManager Pointeur optionnel vers ClimateManager pour les températures en direct
      */
-    void update(DeviceManager& devManager, ClimateManager* climManager = nullptr);
+    void update(DeviceManager& devManager);
 
 private:
     String _rulesPath;
@@ -52,5 +69,3 @@ private:
     SemaphoreHandle_t _mutex;
     NonBlockingTimer _evalTimer;
 };
-
-

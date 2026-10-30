@@ -64,29 +64,40 @@ static bool parseJsonBody(AsyncWebServerRequest *request, JsonDocument& doc) {
 
 static AsyncWebSocket ws("/ws");
 
-void setupWebServerRoutes(AsyncWebServer& server, DeviceManager& devManager, SystemManager& sysManager, AutomationManager& autoManager, ClimateManager& climManager, WiFiManager& wifiManager, DiagnosticManager& diagManager) {
+void broadcastDeviceState(DeviceManager& devManager) {
+    if (ws.count() > 0) {
+        ws.textAll(devManager.getDevicesJson());
+    }
+}
+
+void setupWebServerRoutes(AsyncWebServer& server, DeviceManager& devManager, AutomationManager& autoManager, WiFiManager& wifiManager, DiagnosticManager& diagManager) {
     // -------------------------------------------------------------
     // WEBSOCKET TEMPS RÉEL (/ws)
     // -------------------------------------------------------------
-    ws.onEvent([&climManager, &sysManager, &devManager](AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
+    ws.onEvent([&devManager](AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
         if (type == WS_EVT_CONNECT) {
             Serial.printf("[WebSocket] Client #%u connecte depuis %s\n", client->id(), client->remoteIP().toString().c_str());
-            client->text(climManager.getTelemetryJson(&sysManager, &devManager));
+            client->text(devManager.getDevicesJson());
         } else if (type == WS_EVT_DISCONNECT) {
             Serial.printf("[WebSocket] Client #%u deconnecte\n", client->id());
         } else if (type == WS_EVT_DATA) {
             AwsFrameInfo *info = (AwsFrameInfo*)arg;
             if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
-                String msg = "";
-                msg.concat((const char*)data, len);
-                climManager.handleJsonCommand(msg);
+                JsonDocument doc;
+                DeserializationError err = deserializeJson(doc, data, len);
+                if (!err) {
+                    const char* cmd = doc["cmd"] | "";
+                    if (strcmp(cmd, "getState") == 0) {
+                        client->text(devManager.getDevicesJson());
+                    } else if (strcmp(cmd, "setState") == 0) {
+                        uint8_t id = doc["id"] | 0;
+                        uint8_t state = doc["state"] | 0;
+                        uint8_t value = doc["value"] | 0;
+                        devManager.setDeviceState(id, state, value);
+                        ws.textAll(devManager.getDevicesJson());
+                    }
+                }
             }
-        }
-    });
-
-    climManager.setBroadcastCallback([](const String& msg) {
-        if (ws.count() > 0) {
-            ws.textAll(msg);
         }
     });
 
@@ -110,6 +121,10 @@ void setupWebServerRoutes(AsyncWebServer& server, DeviceManager& devManager, Sys
     // 2. GET /api/available-pins : Retourne la liste des pins sûrs & libres
     // -------------------------------------------------------------
     server.on("/api/available-pins", HTTP_GET, [&devManager](AsyncWebServerRequest *request) {
+        sendJsonResponse(request, 200, devManager.getAvailablePinsJson());
+    });
+
+    server.on("/api/pins", HTTP_GET, [&devManager](AsyncWebServerRequest *request) {
         sendJsonResponse(request, 200, devManager.getAvailablePinsJson());
     });
 
@@ -140,24 +155,46 @@ void setupWebServerRoutes(AsyncWebServer& server, DeviceManager& devManager, Sys
     // 4. POST /api/devices/save : Enregistrement complet (Wizard ou modification)
     // -------------------------------------------------------------
     server.on("/api/devices/save", HTTP_POST,
-        [&devManager](AsyncWebServerRequest *request) {
+        [&devManager, &diagManager](AsyncWebServerRequest *request) {
             JsonDocument doc;
             if (!parseJsonBody(request, doc)) return;
 
-            uint8_t id = doc["id"] | 0;
+            uint8_t id = 0;
+            if (doc["id"].is<int>()) {
+                id = doc["id"].as<uint8_t>();
+            } else if (doc["id"].is<String>()) {
+                id = (uint8_t)doc["id"].as<String>().toInt();
+            }
+
             String name = doc["name"] | "";
             String catStr = doc["category"] | "ACTUATOR";
             String voltage = doc["voltage"] | "12V";
             String modeStr = doc["mode"] | "OUTPUT_RELAY";
-            uint8_t gpio = doc["gpio"] | 255;
+
+            uint8_t gpio = 255;
+            if (doc["gpio"].is<int>()) {
+                gpio = doc["gpio"].as<uint8_t>();
+            } else if (doc["gpio"].is<String>()) {
+                gpio = (uint8_t)doc["gpio"].as<String>().toInt();
+            }
+
             bool isCore = doc["isCore"] | false;
 
             DeviceCategory cat = DeviceManager::stringToCategory(catStr);
             SignalMode mode = DeviceManager::stringToSignalMode(modeStr);
             String errorMsg;
 
+            Device* existingDev = (id > 0) ? devManager.getDeviceById(id) : nullptr;
+            bool isModification = (existingDev != nullptr);
+
             bool ok = devManager.saveDevice(id, name, cat, voltage, mode, gpio, isCore, errorMsg);
             if (ok) {
+                if (isModification) {
+                    diagManager.addLog("INFO", "Modification équipement : \"" + name + "\" (ID #" + String(id) + ", GPIO " + String(gpio) + ")");
+                } else {
+                    diagManager.addLog("INFO", "Création équipement : \"" + name + "\" (GPIO " + String(gpio) + ")");
+                }
+                broadcastDeviceState(devManager);
                 sendSuccess(request, "Équipement enregistré et activé avec succès");
             } else {
                 sendError(request, 400, errorMsg);
@@ -171,19 +208,51 @@ void setupWebServerRoutes(AsyncWebServer& server, DeviceManager& devManager, Sys
     // 5. POST /api/devices/delete : Suppression d'un équipement
     // -------------------------------------------------------------
     server.on("/api/devices/delete", HTTP_POST,
-        [&devManager](AsyncWebServerRequest *request) {
+        [&devManager, &diagManager](AsyncWebServerRequest *request) {
             JsonDocument doc;
             if (!parseJsonBody(request, doc)) return;
 
             uint8_t id = doc["id"] | 0;
             String errorMsg;
 
+            Device* dev = devManager.getDeviceById(id);
+            String devName = dev ? dev->name : ("ID #" + String(id));
+
             bool ok = devManager.deleteDevice(id, errorMsg);
             if (ok) {
+                diagManager.addLog("INFO", "Suppression équipement : \"" + devName + "\" (ID #" + String(id) + ")");
+                broadcastDeviceState(devManager);
                 sendSuccess(request, "Périphérique supprimé et broche libérée");
             } else {
                 int statusCode = errorMsg.indexOf("Core") >= 0 ? 403 : 400;
                 sendError(request, statusCode, errorMsg);
+            }
+        },
+        NULL,
+        handleBodyChunk
+    );
+
+    // -------------------------------------------------------------
+    // 5bis. POST /api/devices/toggle-enabled : Activation / Désactivation
+    // -------------------------------------------------------------
+    server.on("/api/devices/toggle-enabled", HTTP_POST,
+        [&devManager, &diagManager](AsyncWebServerRequest *request) {
+            JsonDocument doc;
+            if (!parseJsonBody(request, doc)) return;
+
+            uint8_t id = doc["id"] | 0;
+            bool enabled = doc["enabled"] | false;
+
+            Device* dev = devManager.getDeviceById(id);
+            String devName = dev ? dev->name : ("ID #" + String(id));
+
+            bool ok = devManager.setDeviceEnabled(id, enabled);
+            if (ok) {
+                diagManager.addLog("INFO", (enabled ? "Activation équipement : \"" : "Désactivation équipement : \"") + devName + "\" (ID #" + String(id) + ")");
+                broadcastDeviceState(devManager);
+                sendSuccess(request, enabled ? "Équipement activé" : "Équipement désactivé");
+            } else {
+                sendError(request, 404, "Périphérique introuvable");
             }
         },
         NULL,
@@ -239,6 +308,7 @@ void setupWebServerRoutes(AsyncWebServer& server, DeviceManager& devManager, Sys
 
             bool ok = devManager.setDeviceState(id, state, value);
             if (ok) {
+                broadcastDeviceState(devManager);
                 sendSuccess(request);
             } else {
                 sendError(request, 404, "Périphérique introuvable");
@@ -277,200 +347,7 @@ void setupWebServerRoutes(AsyncWebServer& server, DeviceManager& devManager, Sys
     );
 
     // -------------------------------------------------------------
-    // 9. GESTION DES SYSTÈMES COMPOSITES (/api/systems)
-    // -------------------------------------------------------------
-    server.on("/api/systems", HTTP_GET, [&sysManager, &devManager, &climManager](AsyncWebServerRequest *request) {
-        sendJsonResponse(request, 200, sysManager.getSystemsJson(devManager, &climManager));
-    });
-
-    server.on("/api/systems/climatisation/compressor", HTTP_POST,
-        [&climManager](AsyncWebServerRequest *request) {
-            JsonDocument doc;
-            if (!parseJsonBody(request, doc)) return;
-
-            String state = doc["state"] | (doc["mode"] | "auto");
-            climManager.setCompressorMode(state);
-
-            JsonDocument respDoc;
-            respDoc["success"] = true;
-            respDoc["state"] = climManager.getCompressorStateString();
-            respDoc["mode"] = climManager.getCompressorModeString();
-            respDoc["remaining_delay_sec"] = climManager.getAntiCycleRemainingSec();
-            sendJsonDoc(request, 200, respDoc);
-        },
-        nullptr,
-        handleBodyChunk
-    );
-
-    server.on("/api/systems/save", HTTP_POST,
-        [&sysManager](AsyncWebServerRequest *request) {
-            JsonDocument doc;
-            if (!parseJsonBody(request, doc)) return;
-
-            SystemConfig sys;
-            sys.id = (const char*)(doc["id"] | "clim_main");
-            sys.type = (const char*)(doc["type"] | "climatisation");
-            sys.name = (const char*)(doc["name"] | "Climatisation");
-            sys.enabled = doc["enabled"] | true;
-
-            if (doc["bindings"].is<JsonObject>()) {
-                JsonObject b = doc["bindings"].as<JsonObject>();
-                sys.bindings.tempAirId = b["temp_air_id"] | 0;
-                sys.bindings.tempWaterId = b["temp_water_id"] | 0;
-                sys.bindings.fanPwmId = b["fan_pwm_id"] | 0;
-                sys.bindings.pumpRelayId = b["pump_relay_id"] | 0;
-                sys.bindings.compressorRelayId = b["compressor_relay_id"] | 0;
-            }
-
-            if (doc["settings"].is<JsonObject>()) {
-                JsonObject s = doc["settings"].as<JsonObject>();
-                sys.targetTemp = s["target_temp"] | 21.0f;
-                sys.mode = (const char*)(s["mode"] | "NORMAL");
-            }
-
-            bool ok = sysManager.saveSystem(sys);
-            if (ok) {
-                sendSuccess(request);
-            } else {
-                sendError(request, 500, "Échec sauvegarde système");
-            }
-        },
-        nullptr,
-        handleBodyChunk
-    );
-
-    server.on("/api/systems/delete", HTTP_POST,
-        [&sysManager](AsyncWebServerRequest *request) {
-            JsonDocument doc;
-            if (!parseJsonBody(request, doc)) return;
-
-            String id = (const char*)(doc["id"] | "");
-            bool ok = sysManager.deleteSystem(id);
-            if (ok) {
-                sendSuccess(request);
-            } else {
-                sendError(request, 404, "Système introuvable");
-            }
-        },
-        nullptr,
-        handleBodyChunk
-    );
-
-    server.on("/api/systems/bind", HTTP_POST,
-        [&sysManager](AsyncWebServerRequest *request) {
-            JsonDocument doc;
-            if (!parseJsonBody(request, doc)) return;
-
-            String sysId = (const char*)(doc["system_id"] | "clim_main");
-            String slot = (const char*)(doc["slot"] | "");
-            uint8_t devId = doc["device_id"] | 0;
-
-            bool ok = sysManager.bindDeviceToSlot(sysId, slot, devId);
-            if (ok) {
-                sendSuccess(request);
-            } else {
-                sendError(request, 400, "Slot ou système invalide");
-            }
-        },
-        nullptr,
-        handleBodyChunk
-    );
-
-    // -------------------------------------------------------------
-    // 10. Télémétrie Climate Pro : GET /data
-    // -------------------------------------------------------------
-    server.on("/data", HTTP_GET, [&climManager, &sysManager, &devManager](AsyncWebServerRequest *request) {
-        sendJsonResponse(request, 200, climManager.getTelemetryJson(&sysManager, &devManager));
-    });
-
-    // -------------------------------------------------------------
-    // 11. Actions rapides (GET /action)
-    // -------------------------------------------------------------
-    server.on("/action", HTTP_GET, [&climManager](AsyncWebServerRequest *request) {
-        if (request->hasParam("power")) {
-            climManager.setPower(request->getParam("power")->value() == "1");
-        }
-        if (request->hasParam("temp")) {
-            float t = request->getParam("temp")->value().toFloat();
-            climManager.setTarget(climManager.isTargetEnabled(), t);
-        }
-        if (request->hasParam("target_enabled")) {
-            bool en = request->getParam("target_enabled")->value() == "1";
-            climManager.setTarget(en, climManager.getTargetTemp());
-        }
-        if (request->hasParam("fan")) {
-            int f = request->getParam("fan")->value().toInt();
-            climManager.setFanSpeed((uint8_t)f);
-        }
-        if (request->hasParam("mode")) {
-            climManager.setMode(request->getParam("mode")->value());
-        }
-        if (request->hasParam("hyst")) {
-            float h = request->getParam("hyst")->value().toFloat();
-            climManager.setHysteresis(h);
-        }
-        if (request->hasParam("chiller")) {
-            climManager.setChiller(request->getParam("chiller")->value() == "1");
-        }
-        if (request->hasParam("water_temp")) {
-            climManager.setWaterTargetTemp(request->getParam("water_temp")->value().toFloat());
-        }
-        if (request->hasParam("timer_enabled") || request->hasParam("timer_sec")) {
-            bool en = request->hasParam("timer_enabled") ? (request->getParam("timer_enabled")->value() == "1") : climManager.isTimerEnabled();
-            uint32_t sec = request->hasParam("timer_sec") ? (uint32_t)request->getParam("timer_sec")->value().toInt() : climManager.getTimerDurationSec();
-            climManager.setTimer(en, sec);
-        }
-
-        sendJsonResponse(request, 200, "{\"status\":\"ok\"}");
-    });
-
-    // -------------------------------------------------------------
-    // 12. GET & POST /api/cycles : Base de données des cycles de climatisation
-    // -------------------------------------------------------------
-    server.on("/api/cycles", HTTP_GET, [](AsyncWebServerRequest *request) {
-        if (LittleFS.exists("/cycles.json")) {
-            File file = LittleFS.open("/cycles.json", "r");
-            if (file) {
-                String content = file.readString();
-                file.close();
-                sendJsonResponse(request, 200, content);
-                return;
-            }
-        }
-        sendJsonResponse(request, 200, "{\"cycles\":[]}");
-    });
-
-    server.on("/api/cycles", HTTP_POST,
-        [](AsyncWebServerRequest *request) {
-            String* body = (String*)request->_tempObject;
-            if (!body || body->length() == 0) {
-                sendError(request, 400, "Corps JSON vide");
-                return;
-            }
-
-            File file = LittleFS.open("/cycles.json", "w");
-            bool ok = false;
-            if (file) {
-                file.print(*body);
-                file.close();
-                ok = true;
-            }
-
-            delete body;
-            request->_tempObject = nullptr;
-
-            if (ok) {
-                sendSuccess(request);
-            } else {
-                sendError(request, 500, "Erreur ecriture LittleFS");
-            }
-        },
-        nullptr,
-        handleBodyChunk
-    );
-
-    // -------------------------------------------------------------
-    // 13. Wi-Fi Hybride : /api/wifi/status, /api/wifi/scan, /api/wifi/connect, /api/wifi/reset
+    // 9. Wi-Fi Hybride : /api/wifi/status, /api/wifi/scan, /api/wifi/connect, /api/wifi/reset
     // -------------------------------------------------------------
     server.on("/api/wifi/status", HTTP_GET, [&wifiManager](AsyncWebServerRequest *request) {
         sendJsonResponse(request, 200, wifiManager.getStatusJson());
@@ -510,16 +387,26 @@ void setupWebServerRoutes(AsyncWebServer& server, DeviceManager& devManager, Sys
     });
 
     // -------------------------------------------------------------
-    // 14. DIAGNOSTIC & SANTÉ DU SYSTÈME (/api/diagnostics & /api/system/restart)
+    // 10. DIAGNOSTIC & SANTÉ DU SYSTÈME (/api/diagnostics & /api/system/restart)
     // -------------------------------------------------------------
-    server.on("/api/diagnostics", HTTP_GET, [&devManager, &sysManager, &climManager, &wifiManager, &diagManager](AsyncWebServerRequest *request) {
+    server.on("/api/diagnostics", HTTP_GET, [&devManager, &wifiManager, &diagManager](AsyncWebServerRequest *request) {
         if (request->hasParam("ts")) {
             uint32_t clientTs = request->getParam("ts")->value().toInt();
             if (clientTs > 1600000000) {
                 diagManager.syncTime(clientTs);
             }
         }
-        sendJsonResponse(request, 200, diagManager.getDiagnosticsJson(devManager, sysManager, climManager, wifiManager));
+        sendJsonResponse(request, 200, diagManager.getDiagnosticsJson(devManager, wifiManager));
+    });
+
+    server.on("/api/diag", HTTP_GET, [&devManager, &wifiManager, &diagManager](AsyncWebServerRequest *request) {
+        if (request->hasParam("ts")) {
+            uint32_t clientTs = request->getParam("ts")->value().toInt();
+            if (clientTs > 1600000000) {
+                diagManager.syncTime(clientTs);
+            }
+        }
+        sendJsonResponse(request, 200, diagManager.getDiagnosticsJson(devManager, wifiManager));
     });
 
     server.on("/api/diagnostics/clear", HTTP_POST, [&diagManager](AsyncWebServerRequest *request) {
@@ -527,15 +414,35 @@ void setupWebServerRoutes(AsyncWebServer& server, DeviceManager& devManager, Sys
         sendSuccess(request, "Historique de diagnostic effacé avec succès.");
     });
 
+    server.on("/api/diag/clear", HTTP_POST, [&diagManager](AsyncWebServerRequest *request) {
+        diagManager.clearLogs();
+        sendSuccess(request, "Historique de diagnostic effacé avec succès.");
+    });
+
+    server.on("/api/diagnostics/log", HTTP_POST,
+        [&diagManager](AsyncWebServerRequest *request) {
+            JsonDocument doc;
+            if (!parseJsonBody(request, doc)) return;
+
+            String level = doc["level"] | "INFO";
+            String message = doc["message"] | "";
+            if (message.length() > 0) {
+                diagManager.addLog(level, message);
+            }
+            sendSuccess(request, "Événement consigné dans le journal.");
+        },
+        NULL,
+        handleBodyChunk
+    );
+
     server.on("/api/system/restart", HTTP_POST, [&diagManager](AsyncWebServerRequest *request) {
         sendSuccess(request, "Redémarrage de l'ESP32 en cours...");
-        // Exécution différée du reboot pour laisser le temps à la réponse HTTP de partir
         vTaskDelay(pdMS_TO_TICKS(300));
         diagManager.restartSystem();
     });
 
     // -------------------------------------------------------------
-    // 15. Fichiers statiques LittleFS (Compression gzip automatique & Cache navigateur)
+    // 11. Fichiers statiques LittleFS
     // -------------------------------------------------------------
     server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html").setCacheControl("public, max-age=86400");
 

@@ -4,9 +4,7 @@
 #include <ESPAsyncWebServer.h>
 
 #include "DeviceManager.h"
-#include "SystemManager.h"
 #include "AutomationManager.h"
-#include "ClimateManager.h"
 #include "WiFiManager.h"
 #include "DiagnosticManager.h"
 #include "WebServerRoutes.h"
@@ -14,9 +12,7 @@
 // Instances globales
 AsyncWebServer server(80);
 DeviceManager devManager;
-SystemManager sysManager;
 AutomationManager autoManager;
-ClimateManager climManager;
 WiFiManager wifiManager;
 DiagnosticManager diagManager;
 
@@ -24,7 +20,7 @@ void setup() {
     Serial.begin(115200);
     delay(1000);
     Serial.println("\n==================================================");
-    Serial.println("   CLIMATE PRO - ESP32 DYNAMIC DEVICE MANAGER     ");
+    Serial.println("         VAN ASSISTANT - HUB EMBARQUÉ            ");
     Serial.println("==================================================");
 
     // 0. Initialisation du Gestionnaire de Diagnostic & Watchdog matériel (10s)
@@ -37,34 +33,20 @@ void setup() {
         Serial.println("[MAIN] DeviceManager opérationnel.");
     }
 
-    // 2. Initialisation du Gestionnaire des Systèmes composites (/systems.json)
-    if (!sysManager.begin("/systems.json")) {
-        Serial.println("[MAIN] Avertissement : Échec initialisation SystemManager.");
-    } else {
-        Serial.println("[MAIN] SystemManager opérationnel.");
-    }
-
-    // 3. Initialisation du Moteur d'automatisation (/automations.json)
+    // 2. Initialisation du Moteur d'automatisation (/automations.json)
     if (!autoManager.begin("/automations.json")) {
         Serial.println("[MAIN] Avertissement : Échec chargement initial des automatisations.");
     } else {
         Serial.println("[MAIN] AutomationManager opérationnel.");
     }
 
-    // 4. Initialisation du Moteur de régulation thermique 24/24 (/climate.json)
-    if (!climManager.begin("/climate.json")) {
-        Serial.println("[MAIN] Avertissement : Échec initialisation ClimateManager.");
-    } else {
-        Serial.println("[MAIN] ClimateManager 24/24 autonome opérationnel.");
-    }
-
-    // 5. Initialisation du Gestionnaire Wi-Fi Hybride résilient (AP 'Van-Clim-Local' + STA /wifi.json + mDNS)
+    // 3. Initialisation du Gestionnaire Wi-Fi Hybride résilient (AP 'Van-Assistant-Local' + STA /wifi.json + mDNS)
     wifiManager.begin("/wifi.json");
 
-    // 6. Configuration des endpoints API REST, WebSockets et distribution des fichiers LittleFS
-    setupWebServerRoutes(server, devManager, sysManager, autoManager, climManager, wifiManager, diagManager);
+    // 4. Configuration des endpoints API REST, WebSockets et distribution des fichiers LittleFS
+    setupWebServerRoutes(server, devManager, autoManager, wifiManager, diagManager);
 
-    // 7. Lancement du serveur Web asynchrone
+    // 5. Lancement du serveur Web asynchrone
     server.begin();
     Serial.println("[MAIN] Serveur HTTP & WebSockets démarré avec succès.");
     Serial.println("==================================================\n");
@@ -77,20 +59,16 @@ void loop() {
     // 1. Surveillance & reconnexion non-bloquante du Wi-Fi
     wifiManager.update();
 
-    // 2. Régulation thermique continue 24/24 & acquisition capteurs physiques
-    climManager.update(devManager, sysManager);
-
-    // 3. Mise à jour des capteurs physiques généraux et fin des tests matériels temporaires
+    // 2. Mise à jour des capteurs physiques généraux et fin des tests matériels temporaires
     devManager.updateHardwareTests();
     devManager.updateSensors();
 
-    // 4. Évaluation et exécution autonome des règles d'automatisation
-    autoManager.update(devManager, &climManager);
+    // 3. Évaluation et exécution autonome des règles d'automatisation
+    autoManager.update(devManager);
 
-    // 5. Surveillance continue de diagnostic matériel et enregistrement d'événements 48h
-    diagManager.update(devManager, sysManager, climManager, wifiManager);
+    // 4. Surveillance continue de diagnostic matériel et enregistrement d'événements 48h
+    diagManager.update(devManager, wifiManager);
 
-    // 6. Délai FreeRTOS coopératif (50ms)
+    // 5. Délai FreeRTOS coopératif (50ms)
     vTaskDelay(pdMS_TO_TICKS(50));
 }
-
