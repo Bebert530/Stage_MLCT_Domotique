@@ -69,6 +69,13 @@ void loop() {
     // 4. Surveillance continue de diagnostic matériel et enregistrement d'événements 48h
     diagManager.update(devManager, wifiManager);
 
-    // 5. Délai FreeRTOS coopératif (50ms)
+    // 5. Diffusion WebSocket périodique (toutes les 1.5s) des états de capteurs et actionneurs
+    static unsigned long lastWsPush = 0;
+    if (millis() - lastWsPush >= 1500) {
+        lastWsPush = millis();
+        broadcastDeviceState(devManager);
+    }
+
+    // 6. Délai FreeRTOS coopératif (50ms)
     vTaskDelay(pdMS_TO_TICKS(50));
 }

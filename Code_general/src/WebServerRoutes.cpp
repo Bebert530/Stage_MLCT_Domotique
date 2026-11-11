@@ -95,6 +95,11 @@ void setupWebServerRoutes(AsyncWebServer& server, DeviceManager& devManager, Aut
                         uint8_t value = doc["value"] | 0;
                         devManager.setDeviceState(id, state, value);
                         ws.textAll(devManager.getDevicesJson());
+                    } else if (strcmp(cmd, "setInverted") == 0) {
+                        uint8_t id = doc["id"] | 0;
+                        bool inverted = doc["inverted"] | false;
+                        devManager.setDeviceInverted(id, inverted);
+                        ws.textAll(devManager.getDevicesJson());
                     }
                 }
             }
@@ -260,6 +265,33 @@ void setupWebServerRoutes(AsyncWebServer& server, DeviceManager& devManager, Aut
     );
 
     // -------------------------------------------------------------
+    // 5ter. POST /api/devices/toggle-inverted : Inversion logique (Normale / Inversée)
+    // -------------------------------------------------------------
+    server.on("/api/devices/toggle-inverted", HTTP_POST,
+        [&devManager, &diagManager](AsyncWebServerRequest *request) {
+            JsonDocument doc;
+            if (!parseJsonBody(request, doc)) return;
+
+            uint8_t id = doc["id"] | 0;
+            bool inverted = doc["inverted"] | false;
+
+            Device* dev = devManager.getDeviceById(id);
+            String devName = dev ? dev->name : ("ID #" + String(id));
+
+            bool ok = devManager.setDeviceInverted(id, inverted);
+            if (ok) {
+                diagManager.addLog("INFO", "Logique équipement : \"" + devName + "\" modifiée en " + (inverted ? "INVERSÉE" : "NORMALE"));
+                broadcastDeviceState(devManager);
+                sendSuccess(request, inverted ? "Logique inversée" : "Logique normale");
+            } else {
+                sendError(request, 404, "Périphérique introuvable");
+            }
+        },
+        NULL,
+        handleBodyChunk
+    );
+
+    // -------------------------------------------------------------
     // 6. POST /api/devices/test : Test matériel temporaire (Actionneur 3s ou Capteur)
     // -------------------------------------------------------------
     server.on("/api/devices/test", HTTP_POST,
@@ -295,28 +327,34 @@ void setupWebServerRoutes(AsyncWebServer& server, DeviceManager& devManager, Aut
     );
 
     // -------------------------------------------------------------
-    // 7. POST /api/devices/set-state : Commande en direct depuis l'UI
+    // 7. POST /api/devices/set-state & /api/devices/control : Commande en direct depuis l'UI
     // -------------------------------------------------------------
-    server.on("/api/devices/set-state", HTTP_POST,
-        [&devManager](AsyncWebServerRequest *request) {
-            JsonDocument doc;
-            if (!parseJsonBody(request, doc)) return;
+    auto handleSetDeviceState = [&devManager, &diagManager](AsyncWebServerRequest *request) {
+        JsonDocument doc;
+        if (!parseJsonBody(request, doc)) return;
 
-            uint8_t id = doc["id"] | 0;
-            uint8_t state = doc["state"] | 0;
-            uint8_t value = doc["value"] | 0;
+        uint8_t id = doc["id"] | 0;
+        uint8_t state = doc["state"] | 0;
+        uint8_t value = doc["value"] | 0;
+        if (!doc.containsKey("value")) {
+            value = state ? 100 : 0;
+        }
 
-            bool ok = devManager.setDeviceState(id, state, value);
-            if (ok) {
-                broadcastDeviceState(devManager);
-                sendSuccess(request);
-            } else {
-                sendError(request, 404, "Périphérique introuvable");
-            }
-        },
-        NULL,
-        handleBodyChunk
-    );
+        Device* dev = devManager.getDeviceById(id);
+        String devName = dev ? dev->name : ("ID #" + String(id));
+
+        bool ok = devManager.setDeviceState(id, state, value);
+        if (ok) {
+            diagManager.addLog("INFO", "Commande UI : \"" + devName + "\" -> " + (state ? "ACTIF (val=" + String(value) + ")" : "ARRÊT"));
+            broadcastDeviceState(devManager);
+            sendSuccess(request);
+        } else {
+            sendError(request, 404, "Périphérique introuvable");
+        }
+    };
+
+    server.on("/api/devices/set-state", HTTP_POST, handleSetDeviceState, NULL, handleBodyChunk);
+    server.on("/api/devices/control", HTTP_POST, handleSetDeviceState, NULL, handleBodyChunk);
 
     // -------------------------------------------------------------
     // 8. GET & POST /api/automations : Gestion des règles d'automatisation
@@ -354,6 +392,9 @@ void setupWebServerRoutes(AsyncWebServer& server, DeviceManager& devManager, Aut
     });
 
     server.on("/api/wifi/scan", HTTP_GET, [&wifiManager](AsyncWebServerRequest *request) {
+        if (request->hasParam("start")) {
+            wifiManager.startScan();
+        }
         sendJsonResponse(request, 200, wifiManager.getScanResultsJson());
     });
 
@@ -363,7 +404,7 @@ void setupWebServerRoutes(AsyncWebServer& server, DeviceManager& devManager, Aut
             if (!parseJsonBody(request, doc)) return;
 
             String ssid = doc["ssid"] | "";
-            String pass = doc["pass"] | "";
+            String pass = doc["pass"] | (doc["password"] | "");
 
             if (ssid.length() == 0) {
                 sendError(request, 400, "Le nom du réseau (SSID) est obligatoire.");
@@ -382,6 +423,11 @@ void setupWebServerRoutes(AsyncWebServer& server, DeviceManager& devManager, Aut
     );
 
     server.on("/api/wifi/reset", HTTP_POST, [&wifiManager](AsyncWebServerRequest *request) {
+        wifiManager.resetSTA();
+        sendSuccess(request, "Configuration Wi-Fi réinitialisée. Retour au mode AP local seul.");
+    });
+
+    server.on("/api/wifi/forget", HTTP_POST, [&wifiManager](AsyncWebServerRequest *request) {
         wifiManager.resetSTA();
         sendSuccess(request, "Configuration Wi-Fi réinitialisée. Retour au mode AP local seul.");
     });
@@ -435,6 +481,33 @@ void setupWebServerRoutes(AsyncWebServer& server, DeviceManager& devManager, Aut
         handleBodyChunk
     );
 
+    // -------------------------------------------------------------
+    // 5ter. POST /api/devices/toggle-inverted : Inversion logique (Normale / Inversée)
+    // -------------------------------------------------------------
+    server.on("/api/devices/toggle-inverted", HTTP_POST,
+        [&devManager, &diagManager](AsyncWebServerRequest *request) {
+            JsonDocument doc;
+            if (!parseJsonBody(request, doc)) return;
+
+            uint8_t id = doc["id"] | 0;
+            bool inverted = doc["inverted"] | false;
+
+            Device* dev = devManager.getDeviceById(id);
+            String devName = dev ? dev->name : ("ID #" + String(id));
+
+            bool ok = devManager.setDeviceInverted(id, inverted);
+            if (ok) {
+                diagManager.addLog("INFO", "Logique équipement : \"" + devName + "\" modifiée en " + (inverted ? "INVERSÉE" : "NORMALE"));
+                broadcastDeviceState(devManager);
+                sendSuccess(request, inverted ? "Logique inversée" : "Logique normale");
+            } else {
+                sendError(request, 404, "Périphérique introuvable");
+            }
+        },
+        NULL,
+        handleBodyChunk
+    );
+
     server.on("/api/system/restart", HTTP_POST, [&diagManager](AsyncWebServerRequest *request) {
         sendSuccess(request, "Redémarrage de l'ESP32 en cours...");
         vTaskDelay(pdMS_TO_TICKS(300));
@@ -444,7 +517,7 @@ void setupWebServerRoutes(AsyncWebServer& server, DeviceManager& devManager, Aut
     // -------------------------------------------------------------
     // 11. Fichiers statiques LittleFS
     // -------------------------------------------------------------
-    server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html").setCacheControl("public, max-age=86400");
+    server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html").setCacheControl("no-cache, no-store, must-revalidate");
 
     // -------------------------------------------------------------
     // Gestionnaire 404 & OPTIONS

@@ -58,6 +58,7 @@ struct Device {
     int8_t pwmChannel;      // Canal LEDC alloué (0-15 pour PWM, -1 sinon)
     bool isCore;            // Équipement système protégé contre suppression
     bool enabled;           // Équipement actif (pris en compte par la carte et les automatisations)
+    bool inverted;          // Logique inversée (Active LOW pour relais/actionneurs, contact inversé pour capteurs)
 };
 
 /**
@@ -118,6 +119,11 @@ public:
      * @brief Active ou désactive un équipement (ignoré par le hardware et les automatisations si inactif)
      */
     bool setDeviceEnabled(uint8_t id, bool enabled);
+
+    /**
+     * @brief Modifie la logique d'un équipement (Normale ou Inversée)
+     */
+    bool setDeviceInverted(uint8_t id, bool inverted);
 
     /**
      * @brief Lit et actualise les capteurs physiques (Digital, ADC, NTC)

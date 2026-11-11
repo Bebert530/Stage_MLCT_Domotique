@@ -136,6 +136,7 @@ bool DeviceManager::loadConfig() {
         dev.value = obj["value"] | 0;
         dev.isCore = obj["isCore"] | false;
         dev.enabled = obj["enabled"] | true;
+        dev.inverted = obj["inverted"] | false;
 
         if (dev.mode == MODE_OUTPUT_PWM) {
             dev.pwmChannel = allocatePwmChannel();
@@ -185,6 +186,7 @@ bool DeviceManager::saveConfig() {
         obj["value"] = dev.value;
         obj["isCore"] = dev.isCore;
         obj["enabled"] = dev.enabled;
+        obj["inverted"] = dev.inverted;
     }
 
     File file = LittleFS.open(_configPath.c_str(), "w");
@@ -393,18 +395,31 @@ void DeviceManager::applyHardwareState(const Device& dev) {
 
     if (dev.mode == MODE_OUTPUT_RELAY || dev.mode == MODE_OUTPUT_DIRECT) {
         pinMode(dev.gpio, OUTPUT);
-        digitalWrite(dev.gpio, dev.state ? HIGH : LOW);
+        uint8_t pinLevel = dev.inverted ? (dev.state ? LOW : HIGH) : (dev.state ? HIGH : LOW);
+        digitalWrite(dev.gpio, pinLevel);
+        Serial.printf("[Hardware] Relais '%s' (GPIO %d, logique=%s) -> %s (pin=%s)\n", 
+                      dev.name.c_str(), dev.gpio, dev.inverted ? "INVERSEE" : "NORMALE", 
+                      dev.state ? "ON" : "OFF", pinLevel == HIGH ? "HIGH" : "LOW");
     } else if (dev.mode == MODE_OUTPUT_PWM) {
-        uint8_t pwmVal = (dev.state == 0) ? 0 : ((dev.value > 255) ? 255 : ((dev.value < 0) ? 0 : (uint8_t)dev.value));
+        uint16_t dutyRaw = dev.value;
+        if (dutyRaw <= 100) {
+            dutyRaw = (dutyRaw * 255) / 100;
+        }
+        if (dutyRaw > 255) dutyRaw = 255;
+        uint8_t pwmVal = (dev.state == 0) ? 0 : (uint8_t)dutyRaw;
+        uint8_t effectivePwm = dev.inverted ? (255 - pwmVal) : pwmVal;
 #if defined(ESP_ARDUINO_VERSION_MAJOR) && (ESP_ARDUINO_VERSION_MAJOR >= 3)
         ledcAttach(dev.gpio, 5000, 8);
-        ledcWrite(dev.gpio, pwmVal);
+        ledcWrite(dev.gpio, effectivePwm);
 #else
         if (dev.pwmChannel >= 0) {
             ledcAttachPin(dev.gpio, dev.pwmChannel);
-            ledcWrite(dev.pwmChannel, pwmVal);
+            ledcWrite(dev.pwmChannel, effectivePwm);
         }
 #endif
+        Serial.printf("[Hardware] PWM '%s' (GPIO %d, logique=%s) -> %d%% (pwm=%d, effectif=%d)\n", 
+                      dev.name.c_str(), dev.gpio, dev.inverted ? "INVERSEE" : "NORMALE", 
+                      dev.value, pwmVal, effectivePwm);
     }
 }
 
@@ -470,6 +485,7 @@ bool DeviceManager::saveDevice(uint8_t id, const String& name, DeviceCategory ca
     newDev.value = 0;
     newDev.isCore = isCore;
     newDev.enabled = true;
+    newDev.inverted = false;
     newDev.pwmChannel = -1;
 
     _devices.push_back(newDev);
@@ -548,6 +564,24 @@ bool DeviceManager::setDeviceEnabled(uint8_t id, bool enabled) {
     return true;
 }
 
+bool DeviceManager::setDeviceInverted(uint8_t id, bool inverted) {
+    xSemaphoreTake(_mutex, portMAX_DELAY);
+    Device* dev = getDeviceById(id);
+    if (!dev) {
+        xSemaphoreGive(_mutex);
+        return false;
+    }
+
+    dev->inverted = inverted;
+    if (dev->category == CAT_ACTUATOR && dev->enabled) {
+        applyHardwareState(*dev);
+    }
+
+    xSemaphoreGive(_mutex);
+    saveConfig();
+    return true;
+}
+
 void DeviceManager::updateHardwareTests() {
     if (!_testActive) return;
 
@@ -603,13 +637,15 @@ void DeviceManager::updateSensors() {
             pinMode(dev.gpio, INPUT_PULLUP);
             int val = digitalRead(dev.gpio);
             // LOW = contact fermé = 1, HIGH = contact ouvert = 0
-            dev.state = (val == LOW) ? 1 : 0;
+            uint8_t rawState = (val == LOW) ? 1 : 0;
+            dev.state = dev.inverted ? (rawState ? 0 : 1) : rawState;
             dev.value = dev.state;
         } else if (dev.mode == MODE_INPUT_PIR) {
             pinMode(dev.gpio, INPUT);
             int val = digitalRead(dev.gpio);
             // HIGH = mouvement détecté = 1, LOW = aucun mouvement = 0
-            dev.state = (val == HIGH) ? 1 : 0;
+            uint8_t rawState = (val == HIGH) ? 1 : 0;
+            dev.state = dev.inverted ? (rawState ? 0 : 1) : rawState;
             dev.value = dev.state;
         } else if (dev.mode == MODE_INPUT_ADC) {
             int raw = analogRead(dev.gpio);
@@ -791,6 +827,7 @@ DeviceTestResult DeviceManager::testDevice(uint8_t id, uint16_t durationMs) {
     uint8_t prevState = 0;
     uint8_t prevValue = 0;
     int8_t pwmChannel = -1;
+    bool devInverted = false;
 
     {
         xSemaphoreTake(_mutex, portMAX_DELAY);
@@ -807,6 +844,7 @@ DeviceTestResult DeviceManager::testDevice(uint8_t id, uint16_t durationMs) {
         prevState = dev->state;
         prevValue = dev->value;
         pwmChannel = dev->pwmChannel;
+        devInverted = dev->inverted;
         xSemaphoreGive(_mutex);
     }
 
@@ -826,7 +864,7 @@ DeviceTestResult DeviceManager::testDevice(uint8_t id, uint16_t durationMs) {
         _testTimer.start(durationMs);
 
         pinMode(gpio, OUTPUT);
-        digitalWrite(gpio, HIGH);
+        digitalWrite(gpio, devInverted ? LOW : HIGH);
         xSemaphoreGive(_mutex);
 
         res.rawValue = 1;
@@ -936,6 +974,7 @@ String DeviceManager::getDevicesJson() {
         obj["value"] = dev.value;
         obj["isCore"] = dev.isCore;
         obj["enabled"] = dev.enabled;
+        obj["inverted"] = dev.inverted;
     }
 
     String output;
@@ -945,21 +984,69 @@ String DeviceManager::getDevicesJson() {
 }
 
 String DeviceManager::getAvailablePinsJson() {
-    std::vector<uint8_t> pins = getAvailablePins();
+    xSemaphoreTake(_mutex, portMAX_DELAY);
 
 #if defined(ARDUINOJSON_VERSION_MAJOR) && (ARDUINOJSON_VERSION_MAJOR >= 7)
     JsonDocument doc;
 #else
-    DynamicJsonDocument doc(512);
+    DynamicJsonDocument doc(1536);
 #endif
 
     JsonArray array = doc["pins"].to<JsonArray>();
-    for (uint8_t p : pins) {
-        array.add(p);
+
+    struct PinDef {
+        uint8_t gpio;
+        const char* label;
+        bool adc1;
+        bool inputOnly;
+    };
+    static const PinDef ALL_PINS[] = {
+        { 4, "D4", false, false },
+        { 5, "D5", false, false },
+        { 13, "D13", false, false },
+        { 14, "D14", false, false },
+        { 16, "RX2", false, false },
+        { 17, "TX2", false, false },
+        { 18, "SCK", false, false },
+        { 19, "MISO", false, false },
+        { 21, "SDA", false, false },
+        { 22, "SCL", false, false },
+        { 23, "MOSI", false, false },
+        { 25, "DAC1", false, false },
+        { 26, "DAC2", false, false },
+        { 27, "D27", false, false },
+        { 32, "ADC1_CH4", true, false },
+        { 33, "ADC1_CH5", true, false },
+        { 34, "ADC1_CH6 (In)", true, true },
+        { 35, "ADC1_CH7 (In)", true, true },
+        { 36, "VP / ADC1_CH0 (In)", true, true },
+        { 39, "VN / ADC1_CH3 (In)", true, true }
+    };
+
+    for (const auto& p : ALL_PINS) {
+        JsonObject obj = array.add<JsonObject>();
+        obj["gpio"] = p.gpio;
+        obj["label"] = p.label;
+        obj["adc1"] = p.adc1;
+        obj["input_only"] = p.inputOnly;
+
+        String usedBy = "";
+        for (const auto& dev : _devices) {
+            if (dev.gpio == p.gpio) {
+                usedBy = dev.name;
+                break;
+            }
+        }
+        if (usedBy.length() > 0) {
+            obj["used_by"] = usedBy;
+        } else {
+            obj["used_by"] = nullptr;
+        }
     }
 
     String output;
     serializeJson(doc, output);
+    xSemaphoreGive(_mutex);
     return output;
 }
 

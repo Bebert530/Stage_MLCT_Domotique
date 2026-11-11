@@ -165,6 +165,7 @@
                     <th data-i18n="th_device_type" class="col-tech-info">Type de signal</th>
                     <th class="col-center col-tech-info" data-i18n="th_device_gpio">Broche GPIO</th>
                     <th class="col-center" data-i18n="th_device_state">État Actuel</th>
+                    <th class="col-center col-admin-only" data-i18n="th_device_logic">Logique</th>
                     <th class="col-center" data-i18n="th_device_active">Actif</th>
                     <th class="col-right" data-i18n="th_device_actions">Actions</th>
                   </tr>
@@ -188,7 +189,7 @@
             <div style="display:flex; align-items:center; gap:10px;">
               <button class="btn-primary" onclick="openAddAutomationModal()">
                 <svg viewBox="0 0 24 24"><path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/></svg>
-                <span>Ajouter</span>
+                <span data-i18n="auto_btn_add">Ajouter une règle</span>
               </button>
             </div>
           </div>
@@ -313,7 +314,7 @@
               <div class="diag-banner-desc" id="diag-overall-desc">Tous les modules matériels et mémoires fonctionnent dans les tolérances nominales.</div>
             </div>
             <div class="diag-banner-action">
-              <button class="btn-primary" onclick="fetchDiagnostics(true)" data-i18n="diag_btn_refresh">
+              <button class="btn-primary" onclick="fetchDiagnostics(true)">
                 <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor;margin-right:6px;"><path d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"/></svg>
                 <span data-i18n="diag_btn_selftest">Actualiser</span>
               </button>
@@ -589,7 +590,7 @@
 
           <div class="input-group" id="device-voltage-group">
             <label for="device-voltage" data-i18n="label_dev_voltage">Tension d'alimentation</label> 
-            <select id="device-voltage" onchange="updateVoltageOptions()">
+            <select id="device-voltage" onchange="onVoltageChange()">
               <option value="12V">12V (Puissance / Batterie)</option>
               <option value="5V">5V (Alimentation USB / Rail 5V)</option>
               <option value="3.3V">3.3V (Natif ESP32)</option>
@@ -699,7 +700,7 @@
     <div class="modal-dialog" style="max-width: 680px;">
       <div class="modal-header">
         <div>
-          <h3 id="dev-history-title">Historique sur 24h</h3>
+          <h3 id="dev-history-title" data-i18n="hist_title">Historique sur 24h</h3>
         </div>
         <button class="modal-close-btn" onclick="closeDeviceHistoryModal()">&times;</button>
       </div>
@@ -707,19 +708,19 @@
         <!-- Résumé rapide -->
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 16px;">
           <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 14px; text-align: center;">
-            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">État actuel</div>
+            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;" data-i18n="hist_current_state">État actuel</div>
             <div style="font-size: 16px; font-weight: 800; color: var(--cyan-light); margin-top: 2px;" id="hist-current-state">--</div>
           </div>
           <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 14px; text-align: center;">
-            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;" id="hist-stat1-label">Temps actif (24h)</div>
+            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;" id="hist-stat1-label" data-i18n="hist_active_time">Temps actif (24h)</div>
             <div style="font-size: 16px; font-weight: 800; color: var(--success); margin-top: 2px;" id="hist-stat1-val">--</div>
           </div>
           <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 14px; text-align: center;">
-            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;" id="hist-stat2-label">Consommation estimée</div>
+            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;" id="hist-stat2-label" data-i18n="hist_est_power">Consommation estimée</div>
             <div style="font-size: 16px; font-weight: 800; color: var(--yellow-power); margin-top: 2px;" id="hist-stat2-val">--</div>
           </div>
           <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 14px; text-align: center;">
-            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Connecté</div>
+            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;" data-i18n="hist_connected">Connecté</div>
             <div style="font-size: 15px; font-weight: 700; margin-top: 2px;" id="hist-active-badge">--</div>
           </div>
         </div>
@@ -727,33 +728,33 @@
         <!-- Graphique temporel SVG 24h -->
         <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 14px; margin-bottom: 16px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
-            <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Évolution temporelle (Dernières 24 heures)</span>
+            <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;" data-i18n="hist_chart_title">Évolution temporelle (Dernières 24 heures)</span>
             <span style="font-size: 11px; color: var(--cyan-light);" id="hist-chart-unit"></span>
           </div>
           <div id="hist-chart-container" style="width: 100%; height: 160px; position: relative;">
             <!-- SVG généré dynamiquement -->
           </div>
           <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); margin-top: 6px; padding: 0 4px;">
-            <span>Il y a 24h</span>
-            <span>Il y a 18h</span>
-            <span>Il y a 12h</span>
-            <span>Il y a 6h</span>
-            <span>Maintenant</span>
+            <span data-i18n="hist_ago_24h">Il y a 24h</span>
+            <span data-i18n="hist_ago_18h">Il y a 18h</span>
+            <span data-i18n="hist_ago_12h">Il y a 12h</span>
+            <span data-i18n="hist_ago_6h">Il y a 6h</span>
+            <span data-i18n="hist_now">Maintenant</span>
           </div>
         </div>
 
         <!-- Journal des événements 24h -->
         <div>
-          <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">
+          <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;" data-i18n="hist_log_title">
             Journal des transitions (24h)
           </div>
           <div style="max-height: 180px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; background: rgba(0,0,0,0.2);">
             <table class="device-table" style="font-size: 12px;">
               <thead>
                 <tr>
-                  <th style="padding: 8px 12px;">Horodatage</th>
-                  <th style="padding: 8px 12px;">État / Valeur</th>
-                  <th style="padding: 8px 12px;">Détails</th>
+                  <th style="padding: 8px 12px;" data-i18n="hist_th_timestamp">Horodatage</th>
+                  <th style="padding: 8px 12px;" data-i18n="hist_th_state">État / Valeur</th>
+                  <th style="padding: 8px 12px;" data-i18n="hist_th_details">Détails</th>
                 </tr>
               </thead>
               <tbody id="hist-events-table-body">
@@ -765,7 +766,7 @@
 
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn-secondary" onclick="closeDeviceHistoryModal()">Fermer</button>
+        <button type="button" class="btn-secondary" onclick="closeDeviceHistoryModal()" data-i18n="btn_close">Fermer</button>
       </div>
     </div>
   </div>
@@ -775,8 +776,8 @@
     <div class="modal-dialog" style="max-width: 660px;">
       <div class="modal-header">
         <div>
-          <h3 id="automation-modal-title">Ajouter une automatisation</h3>
-          <div class="modal-subtitle" id="automation-modal-sub">Définissez vos déclencheurs et les actions à exécuter</div>
+          <h3 id="automation-modal-title" data-i18n="modal_auto_add_title">Ajouter une automatisation</h3>
+          <div class="modal-subtitle" id="automation-modal-sub" data-i18n="modal_auto_sub">Définissez vos déclencheurs et les actions à exécuter</div>
         </div>
         <button class="modal-close-btn" onclick="closeAutomationModal()">&times;</button>
       </div>
@@ -785,13 +786,13 @@
         <!-- Intitulé de la règle -->
         <div style="margin-bottom: 18px;">
           <label for="modal-rule-name" style="display: block; font-weight: 600; font-size: 13px; margin-bottom: 6px; color: var(--text-light);" data-i18n="label_auto_name">Intitulé de la règle</label>
-          <input type="text" id="modal-rule-name" placeholder="Ex: Allumage couloir, Alerte surchauffe..." style="width: 100%; box-sizing: border-box; padding: 10px 12px; background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 8px; color: white; font-size: 14px;">
+          <input type="text" id="modal-rule-name" placeholder="Ex: Allumage couloir, Alerte surchauffe..." data-i18n-placeholder="placeholder_rule_name" style="width: 100%; box-sizing: border-box; padding: 10px 12px; background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 8px; color: white; font-size: 14px;">
         </div>
 
         <!-- 1ère ligne : écrit "SI" -->
         <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
-          <span class="badge" style="background: rgba(45,212,191,0.18); color: var(--cyan-light); font-weight: 800; font-size: 13px; padding: 6px 14px; border-radius: 6px; letter-spacing: 1px;">SI</span>
-          <span style="font-size: 11px; color: var(--text-muted);">Conditions requises</span>
+          <span class="badge" style="background: rgba(45,212,191,0.18); color: var(--cyan-light); font-weight: 800; font-size: 13px; padding: 6px 14px; border-radius: 6px; letter-spacing: 1px;" data-i18n="th_auto_if">SI</span>
+          <span style="font-size: 11px; color: var(--text-muted);" data-i18n="auto_conds_required">Conditions requises</span>
         </div>
 
         <!-- Ligne d'en dessous : conteneur des conditions -->
@@ -803,7 +804,7 @@
         <div style="margin-bottom: 22px;">
           <button type="button" class="btn-outline-sm" onclick="addConditionRow()" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 600;">
             <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: currentColor;"><path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/></svg>
-            <span>Ajouter une condition</span>
+            <span data-i18n="btn_add_condition">Ajouter une condition</span>
           </button>
         </div>
 
@@ -812,8 +813,8 @@
 
         <!-- Mot "ALORS" en dessous -->
         <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
-          <span class="badge" style="background: rgba(45,212,191,0.18); color: var(--cyan-light); font-weight: 800; font-size: 13px; padding: 6px 14px; border-radius: 6px; letter-spacing: 1px;">ALORS</span>
-          <span style="font-size: 11px; color: var(--text-muted);">Actions à déclencher</span>
+          <span class="badge" style="background: rgba(45,212,191,0.18); color: var(--cyan-light); font-weight: 800; font-size: 13px; padding: 6px 14px; border-radius: 6px; letter-spacing: 1px;" data-i18n="th_auto_then">ALORS</span>
+          <span style="font-size: 11px; color: var(--text-muted);" data-i18n="auto_actions_to_trigger">Actions à déclencher</span>
         </div>
 
         <!-- Ligne d'en dessous : conteneur des actionneurs -->
@@ -825,14 +826,14 @@
         <div style="margin-bottom: 10px;">
           <button type="button" class="btn-outline-sm" onclick="addActionRow()" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 600;">
             <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: currentColor;"><path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/></svg>
-            <span>Ajouter un actionneur</span>
+            <span data-i18n="btn_add_actuator">Ajouter un actionneur</span>
           </button>
         </div>
 
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn-secondary" onclick="closeAutomationModal()">Annuler</button>
-        <button type="button" class="btn-primary" id="btn-save-automation" onclick="saveAutomationModal()">Enregistrer</button>
+        <button type="button" class="btn-secondary" onclick="closeAutomationModal()" data-i18n="btn_cancel">Annuler</button>
+        <button type="button" class="btn-primary" id="btn-save-automation" onclick="saveAutomationModal()" data-i18n="btn_save">Enregistrer</button>
       </div>
     </div>
   </div>
@@ -840,6 +841,6 @@
   <!-- CONTENEUR DES NOTIFICATIONS TOASTS -->
   <div id="toast-container"></div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=2.1"></script>
 </body>
 </html>

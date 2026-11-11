@@ -283,14 +283,17 @@ bool WiFiManager::resetSTA() {
 
 bool WiFiManager::startScan() {
     WiFiMode_t currentMode = WiFi.getMode();
-    if (currentMode == WIFI_AP) {
+    if (currentMode != WIFI_AP_STA && currentMode != WIFI_STA) {
         WiFi.mode(WIFI_AP_STA);
+        delay(50);
     }
     int16_t scanRes = WiFi.scanComplete();
     if (scanRes == -1) {
         // Scan déjà en cours
         return true;
     }
+    // Nettoyer l'ancien résultat éventuel pour forcer un nouveau scan
+    WiFi.scanDelete();
     // Lancement asynchrone non-bloquant
     WiFi.scanNetworks(true, false);
     _isScanning = true;

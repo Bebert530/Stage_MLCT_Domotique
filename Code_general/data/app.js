@@ -55,8 +55,25 @@ const TRANSLATIONS = {
     "th_dev_mode": "Type de signal",
     "th_dev_gpio": "Broche GPIO",
     "th_dev_state": "État / Mesure",
+    "th_device_name": "Nom de l'équipement",
+    "th_device_cat": "Catégorie / Tension",
+    "th_device_type": "Type de signal",
+    "th_device_gpio": "Broche GPIO",
+    "th_device_state": "État Actuel",
+    "th_device_logic": "Logique",
+    "logic_normal": "Normale",
+    "logic_inverted": "Inversée",
+    "title_logic_normal": "Logique normale (Cliquer pour inverser)",
+    "title_logic_inverted": "Logique inversée (Cliquer pour repasser en normale)",
+    "toast_logic_set": "\"{name}\" : Logique définie sur \"{label}\".",
     "th_device_active": "Actif",
     "th_dev_actions": "Actions",
+    "th_device_actions": "Actions",
+    "btn_test": "Tester",
+    "btn_wire": "Câbler",
+    "btn_delete": "Supprimer",
+    "title_readonly_user": "Lecture seule (Compte utilisateur)",
+    "title_toggle_enabled": "Activer ou désactiver la prise en compte sur la carte et les automatisations",
     "empty_devices": "Aucun équipement déclaré. Cliquez sur « Ajouter un équipement » pour commencer.",
     "auto_title": "Règles d'Automatisation",
     "auto_desc": "",
@@ -89,6 +106,34 @@ const TRANSLATIONS = {
     "label_rule_action_dev": "Actionneur cible",
     "label_rule_action_relay": "Action sur le relais",
     "btn_save_rule": "Enregistrer la règle",
+    "btn_save": "Enregistrer",
+    "btn_close": "Fermer",
+    "btn_edit_rule": "Modifier cette règle",
+    "btn_delete_condition": "Supprimer cette condition",
+    "btn_delete_actuator": "Supprimer cet actionneur",
+    "auto_conds_required": "Conditions requises",
+    "auto_actions_to_trigger": "Actions à déclencher",
+    "btn_add_condition": "Ajouter une condition",
+    "btn_add_actuator": "Ajouter un actionneur",
+    "placeholder_rule_name": "Ex: Allumage couloir, Alerte surchauffe...",
+    "modal_auto_sub": "Définissez vos déclencheurs et les actions à exécuter",
+    "hist_title": "Historique sur 24h",
+    "hist_current_state": "État actuel",
+    "hist_active_time": "Temps actif (24h)",
+    "hist_est_power": "Consommation estimée",
+    "hist_connected": "Connecté",
+    "hist_chart_title": "Évolution temporelle (Dernières 24 heures)",
+    "hist_ago_24h": "Il y a 24h",
+    "hist_ago_18h": "Il y a 18h",
+    "hist_ago_12h": "Il y a 12h",
+    "hist_ago_6h": "Il y a 6h",
+    "hist_now": "Maintenant",
+    "hist_log_title": "Journal des transitions (24h)",
+    "hist_th_timestamp": "Horodatage",
+    "hist_th_state": "État / Valeur",
+    "hist_th_details": "Détails",
+    "toast_no_sensor_avail": "Aucun capteur disponible. Ajoutez d'abord un capteur dans le menu Matériel.",
+    "toast_no_actuator_avail": "Aucun actionneur disponible. Ajoutez d'abord un actionneur dans le menu Matériel.",
     "empty_rules": "Aucune règle d'automatisation enregistrée. Cliquez sur « Ajouter une règle » ci-dessus pour configurer un automatisme.",
     "settings_title": "Paramètres Système",
     "settings_sub": "",
@@ -299,8 +344,25 @@ const TRANSLATIONS = {
     "th_dev_mode": "Signal Type",
     "th_dev_gpio": "GPIO Pin",
     "th_dev_state": "State / Reading",
+    "th_device_name": "Device Name",
+    "th_device_cat": "Category / Voltage",
+    "th_device_type": "Signal Type",
+    "th_device_gpio": "GPIO Pin",
+    "th_device_state": "Current State",
+    "th_device_logic": "Logic",
+    "logic_normal": "Normal",
+    "logic_inverted": "Inverted",
+    "title_logic_normal": "Normal logic (Click to invert)",
+    "title_logic_inverted": "Inverted logic (Click to restore normal)",
+    "toast_logic_set": "\"{name}\": Logic set to \"{label}\".",
     "th_device_active": "Active",
     "th_dev_actions": "Actions",
+    "th_device_actions": "Actions",
+    "btn_test": "Test",
+    "btn_wire": "Wire",
+    "btn_delete": "Delete",
+    "title_readonly_user": "Read-only (User account)",
+    "title_toggle_enabled": "Enable or disable processing on board and automations",
     "empty_devices": "No devices declared yet. Click 'Add Device' to start.",
     "auto_title": "Automation Rules",
     "auto_desc": "",
@@ -333,6 +395,34 @@ const TRANSLATIONS = {
     "label_rule_action_dev": "Target actuator",
     "label_rule_action_relay": "Relay action",
     "btn_save_rule": "Save rule",
+    "btn_save": "Save",
+    "btn_close": "Close",
+    "btn_edit_rule": "Edit this rule",
+    "btn_delete_condition": "Delete this condition",
+    "btn_delete_actuator": "Delete this actuator",
+    "auto_conds_required": "Required conditions",
+    "auto_actions_to_trigger": "Actions to trigger",
+    "btn_add_condition": "Add a condition",
+    "btn_add_actuator": "Add an actuator",
+    "placeholder_rule_name": "E.g.: Hallway lighting, Overheat alert...",
+    "modal_auto_sub": "Define your triggers and actions to execute",
+    "hist_title": "24h History",
+    "hist_current_state": "Current State",
+    "hist_active_time": "Active time (24h)",
+    "hist_est_power": "Estimated power",
+    "hist_connected": "Connected",
+    "hist_chart_title": "Time evolution (Last 24 hours)",
+    "hist_ago_24h": "24h ago",
+    "hist_ago_18h": "18h ago",
+    "hist_ago_12h": "12h ago",
+    "hist_ago_6h": "6h ago",
+    "hist_now": "Now",
+    "hist_log_title": "Transition log (24h)",
+    "hist_th_timestamp": "Timestamp",
+    "hist_th_state": "State / Value",
+    "hist_th_details": "Details",
+    "toast_no_sensor_avail": "No sensor available. Please add a sensor in the Hardware menu first.",
+    "toast_no_actuator_avail": "No actuator available. Please add an actuator in the Hardware menu first.",
     "empty_rules": "No automation rules configured yet. Click 'Add a rule' above to create one.",
     "settings_title": "System Settings",
     "settings_sub": "",
@@ -543,8 +633,25 @@ const TRANSLATIONS = {
     "th_dev_mode": "Tipo de señal",
     "th_dev_gpio": "Pin GPIO",
     "th_dev_state": "Estado / Lectura",
+    "th_device_name": "Nombre del equipo",
+    "th_device_cat": "Categoría / Voltaje",
+    "th_device_type": "Tipo de señal",
+    "th_device_gpio": "Pin GPIO",
+    "th_device_state": "Estado Actual",
+    "th_device_logic": "Lógica",
+    "logic_normal": "Normal",
+    "logic_inverted": "Invertida",
+    "title_logic_normal": "Lógica normal (Haga clic para invertir)",
+    "title_logic_inverted": "Lógica invertida (Haga clic para restablecer normal)",
+    "toast_logic_set": "\"{name}\": Lógica establecida en \"{label}\".",
     "th_device_active": "Activo",
     "th_dev_actions": "Acciones",
+    "th_device_actions": "Acciones",
+    "btn_test": "Probar",
+    "btn_wire": "Cablear",
+    "btn_delete": "Eliminar",
+    "title_readonly_user": "Solo lectura (Cuenta de usuario)",
+    "title_toggle_enabled": "Activar o desactivar en la placa y las automatizaciones",
     "empty_devices": "Ningún dispositivo declarado. Haga clic en «Añadir un equipo» para comenzar.",
     "auto_title": "Reglas de Automatización",
     "auto_desc": "",
@@ -577,6 +684,34 @@ const TRANSLATIONS = {
     "label_rule_action_dev": "Actuador destino",
     "label_rule_action_relay": "Acción en el relé",
     "btn_save_rule": "Guardar regla",
+    "btn_save": "Guardar",
+    "btn_close": "Cerrar",
+    "btn_edit_rule": "Modificar esta regla",
+    "btn_delete_condition": "Eliminar esta condición",
+    "btn_delete_actuator": "Eliminar este actuador",
+    "auto_conds_required": "Condiciones requeridas",
+    "auto_actions_to_trigger": "Acciones a ejecutar",
+    "btn_add_condition": "Añadir una condición",
+    "btn_add_actuator": "Añadir un actuador",
+    "placeholder_rule_name": "Ej: Encendido pasillo, Alerta sobrecalentamiento...",
+    "modal_auto_sub": "Defina sus activadores y las acciones a ejecutar",
+    "hist_title": "Historial de 24h",
+    "hist_current_state": "Estado actual",
+    "hist_active_time": "Tiempo activo (24h)",
+    "hist_est_power": "Consumo estimado",
+    "hist_connected": "Conectado",
+    "hist_chart_title": "Evolución temporal (Últimas 24 horas)",
+    "hist_ago_24h": "Hace 24h",
+    "hist_ago_18h": "Hace 18h",
+    "hist_ago_12h": "Hace 12h",
+    "hist_ago_6h": "Hace 6h",
+    "hist_now": "Ahora",
+    "hist_log_title": "Registro de transiciones (24h)",
+    "hist_th_timestamp": "Marca de tiempo",
+    "hist_th_state": "Estado / Valor",
+    "hist_th_details": "Detalles",
+    "toast_no_sensor_avail": "No hay sensor disponible. Primero agregue un sensor en el menú Dispositivos.",
+    "toast_no_actuator_avail": "No hay actuador disponible. Primero agregue un actuador en el menú Dispositivos.",
     "empty_rules": "Ninguna regla de automatización guardada. Haga clic en «Añadir una regla» para configurar una.",
     "settings_title": "Ajustes del Sistema",
     "settings_sub": "",
@@ -870,6 +1005,11 @@ function applyUserRoleVisibility() {
 
   // Masquer les colonnes techniques (Type de signal & Broche GPIO) pour le rôle utilisateur
   document.querySelectorAll('.col-tech-info').forEach(el => {
+    el.style.display = isUser ? 'none' : '';
+  });
+
+  // Masquer les colonnes réservées à l'administrateur (ex: Logique) pour le rôle utilisateur
+  document.querySelectorAll('.col-admin-only').forEach(el => {
     el.style.display = isUser ? 'none' : '';
   });
 
@@ -1239,121 +1379,258 @@ function renderDashboardDevices() {
 }
 
 // =========================================================================
-// HISTORIQUE 24H DES ÉQUIPEMENTS & SUIVI PIR
+// HISTORIQUE RÉEL DES ÉQUIPEMENTS & TÉLÉMÉTRIE TEMPS-RÉEL
 // =========================================================================
-let prevPirStateTracker = {};
+let activeHistoryDeviceId = null;
+let prevDeviceStates = {};
 
-function checkPirDetectionLog(devices) {
+// Stockage glissant persistant des mesures réelles
+let deviceTelemetryHistory = {};
+let deviceEventsHistory = {};
+
+try {
+  const savedHist = localStorage.getItem('van_telemetry_history');
+  if (savedHist) deviceTelemetryHistory = JSON.parse(savedHist);
+  const savedEvt = localStorage.getItem('van_events_history');
+  if (savedEvt) deviceEventsHistory = JSON.parse(savedEvt);
+} catch (e) {
+  deviceTelemetryHistory = {};
+  deviceEventsHistory = {};
+}
+
+function saveTelemetryToStorage() {
+  try {
+    localStorage.setItem('van_telemetry_history', JSON.stringify(deviceTelemetryHistory));
+    localStorage.setItem('van_events_history', JSON.stringify(deviceEventsHistory));
+  } catch (e) {}
+}
+
+function getDeviceNumericValue(dev) {
+  if (!dev) return 0;
+  if (dev.mode === 'INPUT_ONEWIRE' || dev.mode === 'INPUT_ADC_NTC') {
+    const raw = (dev.reading !== undefined ? dev.reading : (dev.value !== undefined ? dev.value : 0));
+    return parseFloat((raw / 100).toFixed(1));
+  }
+  if (dev.mode === 'INPUT_ADC') {
+    return parseFloat((((dev.value || 0) / 4095) * 3.3).toFixed(2));
+  }
+  if (dev.mode === 'OUTPUT_PWM' || (dev.mode && dev.mode.includes('PWM'))) {
+    return (dev.state > 0 ? (dev.value || 100) : 0);
+  }
+  return dev.state > 0 ? 1 : 0;
+}
+
+function getDeviceDisplayValue(dev) {
+  if (!dev) return '--';
+  const isActuator = (dev.category === 'ACTUATOR' || (!dev.category && dev.mode && dev.mode.startsWith('OUTPUT')));
+  if (dev.mode === 'INPUT_ONEWIRE' || dev.mode === 'INPUT_ADC_NTC') {
+    const v = (dev.reading !== undefined ? dev.reading : (dev.value !== undefined ? dev.value : 0)) / 100;
+    return `${v.toFixed(1)} °C`;
+  }
+  if (dev.mode === 'INPUT_ADC') {
+    return `${(((dev.value || 0) / 4095) * 3.3).toFixed(2)} V`;
+  }
+  if (dev.mode === 'INPUT_PIR') {
+    return dev.state > 0 ? 'Mouvement détecté' : 'Repos (aucun mouvement)';
+  }
+  if (dev.mode === 'INPUT_DIGITAL') {
+    return dev.state > 0 ? 'Fermé (Contact actif)' : 'Ouvert (Repos)';
+  }
+  if (dev.mode === 'OUTPUT_PWM' || (dev.mode && dev.mode.includes('PWM'))) {
+    const duty = dev.value || (dev.state > 0 ? 100 : 0);
+    return `${duty}% (${dev.state > 0 ? 'Actif' : 'Arrêt'})`;
+  }
+  if (isActuator) {
+    return dev.state > 0 ? 'ON (Alimenté)' : 'OFF (Arrêté)';
+  }
+  return dev.state > 0 ? 'Actif' : 'Inactif';
+}
+
+function recordDeviceTelemetry(devices) {
   if (!Array.isArray(devices)) return;
-  devices.forEach(d => {
-    if (d.mode === 'INPUT_PIR' && d.enabled !== false) {
-      const prev = prevPirStateTracker[d.id];
-      if (d.state > 0 && (prev === undefined || prev === 0)) {
-        // Envoi au journal de diagnostic de l'ESP32
-        fetchApi('/api/diagnostics/log', 'POST', {
-          level: 'INFO',
-          message: `Détecteur PIR "${d.name}" (GPIO ${d.gpio}) : Mouvement détecté.`
-        }).catch(() => {});
+  const now = Date.now();
+
+  devices.forEach(dev => {
+    if (!dev || !dev.id || dev.enabled === false) return;
+
+    if (!deviceTelemetryHistory[dev.id]) deviceTelemetryHistory[dev.id] = [];
+    if (!deviceEventsHistory[dev.id]) deviceEventsHistory[dev.id] = [];
+
+    const tHist = deviceTelemetryHistory[dev.id];
+    const eHist = deviceEventsHistory[dev.id];
+    const lastPoint = tHist[tHist.length - 1];
+
+    const numVal = getDeviceNumericValue(dev);
+    const dispVal = getDeviceDisplayValue(dev);
+    const isActuator = (dev.category === 'ACTUATOR' || (!dev.category && dev.mode && dev.mode.startsWith('OUTPUT')));
+
+    const stateChanged = (lastPoint && lastPoint.s !== dev.state);
+    const valChanged = lastPoint && (Math.abs(lastPoint.v - numVal) >= 0.1);
+    const timeForHeartbeat = !lastPoint || (now - lastPoint.t >= 15000);
+
+    if (!lastPoint || stateChanged || valChanged || timeForHeartbeat) {
+      tHist.push({ t: now, v: numVal, s: dev.state, raw: dev.value });
+      const cutoff = now - (24 * 3600 * 1000);
+      deviceTelemetryHistory[dev.id] = tHist.filter(p => p.t >= cutoff).slice(-300);
+
+      if (!lastPoint || stateChanged || (valChanged && (dev.mode === 'INPUT_ONEWIRE' || dev.mode === 'INPUT_ADC_NTC'))) {
+        let badge = 'badge-sensor';
+        let desc = `Mesure physique sur GPIO ${dev.gpio}`;
+
+        if (dev.mode === 'INPUT_PIR') {
+          badge = dev.state > 0 ? 'badge-warning' : 'badge-volt';
+          desc = dev.state > 0 ? "Détection infrarouge : passage / présence humaine" : "Fin de temporisation (aucun mouvement)";
+          if (dev.state > 0) {
+            fetchApi('/api/diagnostics/log', 'POST', {
+              level: 'INFO',
+              message: `PIR "${dev.name}" (GPIO ${dev.gpio}) : Mouvement détecté.`
+            }).catch(() => {});
+          }
+        } else if (dev.mode === 'INPUT_DIGITAL') {
+          badge = dev.state > 0 ? 'badge-success' : 'badge-volt';
+          desc = dev.state > 0 ? "Contact fermé (circuit passant)" : "Contact ouvert (circuit coupé)";
+        } else if (isActuator) {
+          badge = dev.state > 0 ? 'badge-success' : 'badge-volt';
+          desc = dev.state > 0 ? `Commande : Sortie alimentée (GPIO ${dev.gpio})` : `Commande : Sortie coupée (GPIO ${dev.gpio})`;
+        } else if (dev.mode === 'INPUT_ONEWIRE' || dev.mode === 'INPUT_ADC_NTC') {
+          badge = 'badge-temp';
+          desc = `Température relevée : ${dispVal}`;
+        }
+
+        eHist.unshift({
+          t: now,
+          val: dispVal,
+          badge,
+          desc
+        });
+        deviceEventsHistory[dev.id] = eHist.slice(0, 50);
       }
-      prevPirStateTracker[d.id] = d.state;
+
+      saveTelemetryToStorage();
     }
   });
+
+  if (activeHistoryDeviceId) {
+    const currentDev = devices.find(d => d.id === activeHistoryDeviceId);
+    if (currentDev) {
+      updateActiveHistoryModalLive(currentDev);
+    }
+  }
+}
+
+function checkPirDetectionLog(devices) {
+  recordDeviceTelemetry(devices);
 }
 
 function openDeviceHistoryModal(id) {
   const dev = devicesList.find(d => d.id === id);
   if (!dev) return;
 
+  activeHistoryDeviceId = id;
   const modal = document.getElementById('device-history-modal');
   if (!modal) return;
 
+  applyTranslations();
+  recordDeviceTelemetry([dev]);
+  updateActiveHistoryModalLive(dev);
+  modal.classList.add('active');
+}
+
+function closeDeviceHistoryModal() {
+  activeHistoryDeviceId = null;
+  const modal = document.getElementById('device-history-modal');
+  if (modal) modal.classList.remove('active');
+}
+
+function updateActiveHistoryModalLive(dev) {
   const isActuator = (dev.category === 'ACTUATOR' || (!dev.category && dev.mode && dev.mode.startsWith('OUTPUT')));
   const isPIR = (dev.mode === 'INPUT_PIR');
-  const isPWM = (dev.mode === 'OUTPUT_PWM');
+  const isPWM = (dev.mode === 'OUTPUT_PWM' || (dev.mode && dev.mode.includes('PWM')));
   const isEnabled = (dev.enabled !== false);
+  const dispVal = getDeviceDisplayValue(dev);
 
-  document.getElementById('dev-history-title').innerText = `${dev.name} - ${t('dev_history_title_suffix', 'Historique 24h')}`;
-
-
-  // 1. État actuel
-  const curStateEl = document.getElementById('hist-current-state');
-  if (isActuator) {
-    curStateEl.innerText = isPWM ? `${dev.value || 0}%` : (dev.state > 0 ? 'ON' : 'OFF');
-    curStateEl.style.color = (dev.state > 0) ? 'var(--cyan-light)' : 'var(--text-muted)';
-  } else if (dev.mode === 'INPUT_ONEWIRE') {
-    const v = dev.reading !== undefined ? (dev.reading / 100).toFixed(1) : (dev.value !== undefined ? (dev.value / 100).toFixed(1) : '21.5');
-    curStateEl.innerText = `${v} °C`;
-    curStateEl.style.color = 'var(--cyan-light)';
-  } else if (isPIR) {
-    curStateEl.innerText = dev.state > 0 ? 'MOUVEMENT' : 'REPOS';
-    curStateEl.style.color = dev.state > 0 ? 'var(--yellow-power)' : 'var(--text-muted)';
-  } else if (dev.mode === 'INPUT_DIGITAL') {
-    curStateEl.innerText = dev.state > 0 ? 'FERMÉ' : 'OUVERT';
-    curStateEl.style.color = dev.state > 0 ? 'var(--success)' : 'var(--text-muted)';
-  } else {
-    curStateEl.innerText = `${(((dev.value || 0) / 4095) * 3.3).toFixed(2)} V`;
-    curStateEl.style.color = 'var(--cyan-light)';
+  const titleEl = document.getElementById('dev-history-title');
+  if (titleEl) {
+    titleEl.innerText = `${dev.name} - ${isActuator ? 'Détails & Suivi Actionneur' : 'Détails & Mesures Réelles'}`;
   }
 
-  // Connecté
-  const activeBadge = document.getElementById('hist-active-badge');
-  activeBadge.innerHTML = isEnabled
-    ? `<span class="badge badge-success">${t('header_connected', 'Connecté')}</span>`
-    : `<span class="badge" style="background:rgba(239,68,68,0.15); color:var(--danger); border:1px solid rgba(239,68,68,0.3);">${t('header_disconnected', 'Déconnecté')}</span>`;
+  const curStateEl = document.getElementById('hist-current-state');
+  if (curStateEl) {
+    curStateEl.innerText = dispVal;
+    if (dev.mode === 'INPUT_PIR') {
+      curStateEl.style.color = (dev.state > 0) ? 'var(--yellow-power)' : 'var(--text-muted)';
+    } else if (isActuator) {
+      curStateEl.style.color = (dev.state > 0) ? 'var(--cyan-light)' : 'var(--text-muted)';
+    } else {
+      curStateEl.style.color = 'var(--cyan-light)';
+    }
+  }
 
-  // 2. Statistiques 24h
+  const activeBadge = document.getElementById('hist-active-badge');
+  if (activeBadge) {
+    activeBadge.innerHTML = isEnabled
+      ? `<span class="badge badge-success">${t('header_connected', 'Connecté')}</span>`
+      : `<span class="badge" style="background:rgba(239,68,68,0.15); color:var(--danger); border:1px solid rgba(239,68,68,0.3);">${t('header_disconnected', 'Désactivé')}</span>`;
+  }
+
   const stat1Lbl = document.getElementById('hist-stat1-label');
   const stat1Val = document.getElementById('hist-stat1-val');
   const stat2Lbl = document.getElementById('hist-stat2-label');
   const stat2Val = document.getElementById('hist-stat2-val');
 
+  const history = deviceTelemetryHistory[dev.id] || [];
+  const events = deviceEventsHistory[dev.id] || [];
+
   if (isActuator) {
-    const hours = isEnabled ? (dev.state > 0 ? 4.2 : 2.8) : 0.0;
-    stat1Lbl.innerText = t('stat_on_time_24h', "Temps allumé (24h)");
-    stat1Val.innerText = isEnabled ? (dev.state > 0 ? "4.2 h" : "2.8 h") : "0.0 h";
+    stat1Lbl.innerText = "Dernière commande";
+    const lastCmd = events.find(e => e.desc && e.desc.includes('Commande'));
+    stat1Val.innerText = lastCmd ? formatRelativeTime(lastCmd.t) : (dev.state > 0 ? "Actif (ON)" : "Arrêté (OFF)");
 
-    stat2Lbl.innerText = t('stat_est_consumption', "Consommation estimée");
-    let powerW = 18;
-    if (dev.voltage === '5V') powerW = 5;
-    else if (dev.voltage === '3.3V') powerW = 1.5;
-    if (isPWM) {
-      const duty = (dev.value !== undefined ? dev.value : (dev.state > 0 ? 100 : 0)) / 100;
-      powerW = Math.round(powerW * Math.max(0.1, duty));
-    }
-    const wh = isEnabled ? Math.round(hours * powerW) : 0;
-    stat2Val.innerText = isEnabled ? `~${wh} Wh` : "0 Wh";
+    stat2Lbl.innerText = "Tension d'alimentation";
+    stat2Val.innerText = `${dev.voltage || '12V'} (GPIO ${dev.gpio})`;
   } else if (isPIR) {
-    stat1Lbl.innerText = t('stat_last_motion', "Dernier mouvement");
-    stat1Val.innerText = dev.state > 0 ? "En cours" : "Il y a 12 min";
+    stat1Lbl.innerText = "Dernier mouvement";
+    const lastMotion = events.find(e => e.val && e.val.includes('Mouvement'));
+    stat1Val.innerText = dev.state > 0 ? "En cours" : (lastMotion ? formatRelativeTime(lastMotion.t) : "Aucun détecté");
 
-    stat2Lbl.innerText = t('stat_detections_24h', "Détections (24h)");
-    stat2Val.innerText = isEnabled ? "14 passages" : "0 passage";
+    stat2Lbl.innerText = "Détections enregistrées";
+    const motionCount = events.filter(e => e.val && e.val.includes('Mouvement')).length;
+    stat2Val.innerText = `${motionCount} passage(s)`;
   } else if (dev.mode === 'INPUT_ONEWIRE' || dev.mode === 'INPUT_ADC_NTC') {
-    const curVal = parseFloat(curStateEl.innerText) || 21.0;
-    stat1Lbl.innerText = t('stat_temp_min_24h', "Température Min (24h)");
-    stat1Val.innerText = `${(curVal - 2.8).toFixed(1)} °C`;
-
-    stat2Lbl.innerText = t('stat_temp_max_24h', "Température Max (24h)");
-    stat2Val.innerText = `${(curVal + 3.5).toFixed(1)} °C`;
+    stat1Lbl.innerText = "Température Min Réelle";
+    stat2Lbl.innerText = "Température Max Réelle";
+    if (history.length > 0) {
+      const vals = history.map(p => p.v).filter(v => v > -50 && v < 120);
+      const minVal = vals.length > 0 ? Math.min(...vals) : getDeviceNumericValue(dev);
+      const maxVal = vals.length > 0 ? Math.max(...vals) : getDeviceNumericValue(dev);
+      stat1Val.innerText = `${minVal.toFixed(1)} °C`;
+      stat2Val.innerText = `${maxVal.toFixed(1)} °C`;
+    } else {
+      const cur = getDeviceNumericValue(dev);
+      stat1Val.innerText = `${cur.toFixed(1)} °C`;
+      stat2Val.innerText = `${cur.toFixed(1)} °C`;
+    }
+  } else if (dev.mode === 'INPUT_ADC') {
+    stat1Lbl.innerText = "Tension Min Réelle";
+    stat2Lbl.innerText = "Tension Max Réelle";
+    if (history.length > 0) {
+      const vals = history.map(p => p.v);
+      stat1Val.innerText = `${Math.min(...vals).toFixed(2)} V`;
+      stat2Val.innerText = `${Math.max(...vals).toFixed(2)} V`;
+    } else {
+      const cur = getDeviceNumericValue(dev);
+      stat1Val.innerText = `${cur.toFixed(2)} V`;
+      stat2Val.innerText = `${cur.toFixed(2)} V`;
+    }
   } else {
-    stat1Lbl.innerText = t('stat_measure_min_24h', "Mesure Min (24h)");
-    stat1Val.innerText = "0.00 V";
-    stat2Lbl.innerText = t('stat_measure_max_24h', "Mesure Max (24h)");
-    stat2Val.innerText = "3.25 V";
+    stat1Lbl.innerText = "État logique";
+    stat1Val.innerText = dev.state > 0 ? "Niveau HAUT (1)" : "Niveau BAS (0)";
+    stat2Lbl.innerText = "Broche matérielle";
+    stat2Val.innerText = `GPIO ${dev.gpio}`;
   }
 
-  // 3. Dessiner le graphique 24h
   renderDeviceHistoryChart(dev);
-
-  // 4. Générer le journal 24h
   renderDeviceHistoryEvents(dev);
-
-  modal.classList.add('active');
-}
-
-function closeDeviceHistoryModal() {
-  const modal = document.getElementById('device-history-modal');
-  if (modal) modal.classList.remove('active');
 }
 
 function renderDeviceHistoryChart(dev) {
@@ -1363,110 +1640,113 @@ function renderDeviceHistoryChart(dev) {
 
   const isActuator = (dev.category === 'ACTUATOR' || (!dev.category && dev.mode && dev.mode.startsWith('OUTPUT')));
   const isPIR = (dev.mode === 'INPUT_PIR');
-  const isPWM = (dev.mode === 'OUTPUT_PWM');
+  const isPWM = (dev.mode === 'OUTPUT_PWM' || (dev.mode && dev.mode.includes('PWM')));
   const isTemp = (dev.mode === 'INPUT_ONEWIRE' || dev.mode === 'INPUT_ADC_NTC');
 
   if (unitEl) {
-    unitEl.innerText = isTemp ? "Unité : °C" : (isPWM ? "Unité : %" : (isActuator || isPIR ? "État : 0 (OFF) / 1 (ON)" : "Unité : Volts (V)"));
+    unitEl.innerText = isTemp ? "Unité : °C" : (isPWM ? "Unité : %" : (dev.mode === 'INPUT_ADC' ? "Unité : Volts (V)" : "État logique (0/1)"));
   }
 
   const w = 620;
   const h = 150;
-  const padL = 35;
-  const padR = 15;
-  const padT = 15;
+  const padL = 40;
+  const padR = 20;
+  const padT = 18;
   const padB = 25;
   const plotW = w - padL - padR;
   const plotH = h - padT - padB;
 
-  // Générer 25 points représentatifs des 24 dernières heures
-  const points = [];
-  const now = new Date();
-  const curState = (dev.enabled !== false) ? dev.state : 0;
-  const curVal = dev.value || 0;
+  const history = deviceTelemetryHistory[dev.id] || [];
+  const curNum = getDeviceNumericValue(dev);
 
-  for (let i = 0; i <= 24; i++) {
-    const fraction = i / 24; // 0 = il y a 24h, 1 = maintenant
-    let valNorm = 0; // 0.0 à 1.0 pour le tracé
+  const pts = (history.length > 0) ? [...history] : [{ t: Date.now(), v: curNum, s: dev.state }];
 
-    if (dev.enabled === false) {
-      valNorm = 0;
-    } else if (isPIR) {
-      const hour = (now.getHours() - 24 + i + 48) % 24;
-      const isDay = (hour >= 7 && hour <= 22);
-      if (i === 24) {
-        valNorm = curState > 0 ? 1 : 0;
-      } else if (isDay && (i % 3 === 0 || i % 7 === 0)) {
-        valNorm = 1;
-      } else {
-        valNorm = 0;
-      }
-    } else if (isPWM) {
-      const basePct = (curVal > 0 ? curVal : 70) / 100;
-      valNorm = (i > 8 && i < 20) ? basePct : ((i >= 20) ? basePct * 0.8 : 0);
-      if (i === 24) valNorm = (dev.state > 0 ? (dev.value || 100) / 100 : 0);
-    } else if (isActuator) {
-      const cycle = Math.floor(i / 4) % 2;
-      valNorm = (i === 24) ? (curState > 0 ? 1 : 0) : (cycle === 1 ? 1 : 0);
-    } else if (isTemp) {
-      const rad = ((i - 6) / 24) * 2 * Math.PI;
-      const tNorm = 0.5 + 0.35 * Math.sin(rad);
-      valNorm = (i === 24) ? 0.5 : Math.max(0.1, Math.min(0.9, tNorm + (Math.sin(i * 1.5) * 0.05)));
-    } else {
-      valNorm = 0.3 + 0.4 * Math.abs(Math.sin(i * 0.8));
-    }
+  let minV = Math.min(...pts.map(p => p.v));
+  let maxV = Math.max(...pts.map(p => p.v));
 
-    const x = padL + (fraction * plotW);
-    const y = padT + plotH - (valNorm * plotH);
-    points.push({ x, y, valNorm });
+  if (isActuator || isPIR || dev.mode === 'INPUT_DIGITAL') {
+    minV = 0;
+    maxV = 1;
+  } else if (isPWM) {
+    minV = 0;
+    maxV = 100;
+  } else if (minV === maxV) {
+    minV = Math.max(0, minV - (isTemp ? 2.0 : 0.5));
+    maxV = maxV + (isTemp ? 2.0 : 0.5);
+  } else {
+    const span = maxV - minV;
+    minV = Math.max(0, minV - span * 0.1);
+    maxV = maxV + span * 0.1;
   }
 
-  // Construction du chemin SVG (step pour binaire, spline pour analogique/PWM)
-  let d = '';
-  if (isActuator && !isPWM) {
-    d = `M ${points[0].x} ${points[0].y}`;
-    for (let i = 1; i < points.length; i++) {
-      d += ` L ${points[i].x} ${points[i-1].y} L ${points[i].x} ${points[i].y}`;
+  const vRange = (maxV - minV) || 1;
+
+  const now = Date.now();
+  const startTime = Math.min(pts[0].t, now - 60000);
+  const timeSpan = (now - startTime) || 60000;
+
+  const svgPoints = pts.map(p => {
+    const fracX = Math.max(0, Math.min(1, (p.t - startTime) / timeSpan));
+    const fracY = Math.max(0, Math.min(1, (p.v - minV) / vRange));
+    return {
+      x: padL + fracX * plotW,
+      y: padT + plotH - fracY * plotH,
+      v: p.v,
+      t: p.t
+    };
+  });
+
+  const curFracY = Math.max(0, Math.min(1, (curNum - minV) / vRange));
+  const nowPt = {
+    x: padL + plotW,
+    y: padT + plotH - curFracY * plotH,
+    v: curNum,
+    t: now
+  };
+  svgPoints.push(nowPt);
+
+  let pathD = '';
+  if (isActuator || isPIR || dev.mode === 'INPUT_DIGITAL') {
+    pathD = `M ${svgPoints[0].x} ${svgPoints[0].y}`;
+    for (let i = 1; i < svgPoints.length; i++) {
+      pathD += ` L ${svgPoints[i].x} ${svgPoints[i-1].y} L ${svgPoints[i].x} ${svgPoints[i].y}`;
     }
   } else {
-    d = `M ${points[0].x} ${points[0].y}`;
-    for (let i = 1; i < points.length; i++) {
-      const prev = points[i-1];
-      const cur = points[i];
-      const cpX1 = prev.x + (cur.x - prev.x) / 2;
-      const cpY1 = prev.y;
-      const cpX2 = prev.x + (cur.x - prev.x) / 2;
-      const cpY2 = cur.y;
-      d += ` C ${cpX1} ${cpY1}, ${cpX2} ${cpY2}, ${cur.x} ${cur.y}`;
+    pathD = `M ${svgPoints[0].x} ${svgPoints[0].y}`;
+    for (let i = 1; i < svgPoints.length; i++) {
+      pathD += ` L ${svgPoints[i].x} ${svgPoints[i].y}`;
     }
   }
 
-  const fillD = `${d} L ${points[points.length-1].x} ${padT + plotH} L ${points[0].x} ${padT + plotH} Z`;
+  const fillD = `${pathD} L ${nowPt.x} ${padT + plotH} L ${svgPoints[0].x} ${padT + plotH} Z`;
+
+  const midV = minV + (maxV - minV) / 2;
+  const labelMax = isTemp ? `${maxV.toFixed(1)}°C` : (isPWM ? `${Math.round(maxV)}%` : `${maxV.toFixed(2)}`);
+  const labelMid = isTemp ? `${midV.toFixed(1)}°C` : (isPWM ? `${Math.round(midV)}%` : `${midV.toFixed(2)}`);
+  const labelMin = isTemp ? `${minV.toFixed(1)}°C` : (isPWM ? `${Math.round(minV)}%` : `${minV.toFixed(2)}`);
 
   const gridLines = `
     <line x1="${padL}" y1="${padT}" x2="${w - padR}" y2="${padT}" stroke="rgba(255,255,255,0.08)" stroke-dasharray="3 3"/>
     <line x1="${padL}" y1="${padT + plotH/2}" x2="${w - padR}" y2="${padT + plotH/2}" stroke="rgba(255,255,255,0.08)" stroke-dasharray="3 3"/>
     <line x1="${padL}" y1="${padT + plotH}" x2="${w - padR}" y2="${padT + plotH}" stroke="rgba(255,255,255,0.15)"/>
-    <text x="${padL - 6}" y="${padT + 4}" fill="#64748b" font-size="9" text-anchor="end">${isTemp ? '28°C' : (isPWM ? '100%' : '1')}</text>
-    <text x="${padL - 6}" y="${padT + plotH/2 + 3}" fill="#64748b" font-size="9" text-anchor="end">${isTemp ? '22°C' : (isPWM ? '50%' : '0.5')}</text>
-    <text x="${padL - 6}" y="${padT + plotH + 3}" fill="#64748b" font-size="9" text-anchor="end">${isTemp ? '16°C' : (isPWM ? '0%' : '0')}</text>
+    <text x="${padL - 6}" y="${padT + 4}" fill="#64748b" font-size="9" text-anchor="end">${labelMax}</text>
+    <text x="${padL - 6}" y="${padT + plotH/2 + 3}" fill="#64748b" font-size="9" text-anchor="end">${labelMid}</text>
+    <text x="${padL - 6}" y="${padT + plotH + 3}" fill="#64748b" font-size="9" text-anchor="end">${labelMin}</text>
   `;
-
-  const lastPt = points[points.length - 1];
 
   container.innerHTML = `
     <svg viewBox="0 0 ${w} ${h}" style="width:100%; height:100%; display:block;" preserveAspectRatio="none">
       <defs>
-        <linearGradient id="chartGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#2dd4bf" stop-opacity="0.35"/>
+        <linearGradient id="chartGradReal" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#2dd4bf" stop-opacity="0.30"/>
           <stop offset="100%" stop-color="#2dd4bf" stop-opacity="0.0"/>
         </linearGradient>
       </defs>
       ${gridLines}
-      <path d="${fillD}" fill="url(#chartGrad)"/>
-      <path d="${d}" fill="none" stroke="#2dd4bf" stroke-width="2.2" stroke-linecap="round"/>
-      <circle cx="${lastPt.x}" cy="${lastPt.y}" r="4.5" fill="#2dd4bf"/>
-      <circle cx="${lastPt.x}" cy="${lastPt.y}" r="8" fill="none" stroke="#2dd4bf" stroke-opacity="0.4">
+      <path d="${fillD}" fill="url(#chartGradReal)"/>
+      <path d="${pathD}" fill="none" stroke="#2dd4bf" stroke-width="2.2" stroke-linecap="round"/>
+      <circle cx="${nowPt.x}" cy="${nowPt.y}" r="4.5" fill="#2dd4bf"/>
+      <circle cx="${nowPt.x}" cy="${nowPt.y}" r="8" fill="none" stroke="#2dd4bf" stroke-opacity="0.5">
         <animate attributeName="r" values="4;10;4" dur="2s" repeatCount="indefinite"/>
         <animate attributeName="stroke-opacity" values="0.8;0;0.8" dur="2s" repeatCount="indefinite"/>
       </circle>
@@ -1478,67 +1758,42 @@ function renderDeviceHistoryEvents(dev) {
   const tbody = document.getElementById('hist-events-table-body');
   if (!tbody) return;
 
-  const isActuator = (dev.category === 'ACTUATOR' || (!dev.category && dev.mode && dev.mode.startsWith('OUTPUT')));
-  const isPIR = (dev.mode === 'INPUT_PIR');
-  const isTemp = (dev.mode === 'INPUT_ONEWIRE' || dev.mode === 'INPUT_ADC_NTC');
-  const isEnabled = (dev.enabled !== false);
+  const events = deviceEventsHistory[dev.id] || [];
 
-  if (!isEnabled) {
+  if (events.length === 0) {
+    const dispVal = getDeviceDisplayValue(dev);
     tbody.innerHTML = `
       <tr>
-        <td colspan="3" style="text-align:center; padding:16px; color:var(--text-muted);">
-          Équipement déconnecté. Il est actuellement ignoré par la carte ESP32 et les scénarios d'automatisation.
-        </td>
+        <td style="color:var(--text-muted); font-size:11px; padding:10px 12px; white-space:nowrap;">En direct</td>
+        <td style="padding:10px 12px;"><span class="badge badge-sensor">${escapeHtml(dispVal)}</span></td>
+        <td style="color:var(--text-muted); font-size:12px; padding:10px 12px;">Surveillance matérielle en cours sur GPIO ${dev.gpio}. Aucun changement d'état récent.</td>
       </tr>
     `;
     return;
   }
 
-  let rows = [];
-  if (isPIR) {
-    rows = [
-      { time: "Il y a 3 min", val: "REPOS", badge: "badge-volt", desc: "Fin de temporisation (aucun mouvement)" },
-      { time: "Il y a 4 min", val: "DÉTECTÉ", badge: "badge-warning", desc: "Mouvement humain détecté dans le van" },
-      { time: "Il y a 42 min", val: "DÉTECTÉ", badge: "badge-warning", desc: "Mouvement détecté -> déclenchement scénario" },
-      { time: "Il y a 1h 15m", val: "DÉTECTÉ", badge: "badge-warning", desc: "Passage détecté" },
-      { time: "Il y a 3h 40m", val: "DÉTECTÉ", badge: "badge-warning", desc: "Mouvement détecté" },
-      { time: "Il y a 8h 12m", val: "DÉTECTÉ", badge: "badge-warning", desc: "Détection matinale" }
-    ];
-  } else if (isActuator) {
-    rows = [
-      { time: "Il y a 18 min", val: dev.state > 0 ? "ON" : "OFF", badge: dev.state > 0 ? "badge-success" : "badge-volt", desc: "Commande interface / état courant" },
-      { time: "Il y a 1h 05m", val: "ON", badge: "badge-success", desc: "Allumage automatique suite à règle" },
-      { time: "Il y a 2h 20m", val: "OFF", badge: "badge-volt", desc: "Extinction normale" },
-      { time: "Il y a 4h 50m", val: "ON", badge: "badge-success", desc: "Commande utilisateur" },
-      { time: "Il y a 9h 15m", val: "OFF", badge: "badge-volt", desc: "Arrêt programmé" }
-    ];
-  } else if (isTemp) {
-    const curVal = dev.reading !== undefined ? (dev.reading / 100).toFixed(1) : "21.5";
-    rows = [
-      { time: "Il y a 2 min", val: `${curVal} °C`, badge: "badge-temp", desc: "Mesure périodique normale" },
-      { time: "Il y a 30 min", val: `${(parseFloat(curVal) - 0.3).toFixed(1)} °C`, badge: "badge-temp", desc: "Stabilité thermique van" },
-      { time: "Il y a 2h 00m", val: `${(parseFloat(curVal) + 0.8).toFixed(1)} °C`, badge: "badge-temp", desc: "Relevé automatique" },
-      { time: "Il y a 6h 00m", val: `${(parseFloat(curVal) + 2.1).toFixed(1)} °C`, badge: "badge-temp", desc: "Maximum relevé" },
-      { time: "Il y a 14h 00m", val: `${(parseFloat(curVal) - 2.5).toFixed(1)} °C`, badge: "badge-temp", desc: "Minimum nocturne" }
-    ];
-  } else {
-    rows = [
-      { time: "Il y a 5 min", val: "Lecture OK", badge: "badge-sensor", desc: "Signal actif mesuré" },
-      { time: "Il y a 1h 00m", val: "Lecture OK", badge: "badge-sensor", desc: "Surveillance continue" },
-      { time: "Il y a 6h 00m", val: "Lecture OK", badge: "badge-sensor", desc: "Surveillance continue" }
-    ];
-  }
-
-  tbody.innerHTML = rows.map(r => `
+  tbody.innerHTML = events.map(e => `
     <tr>
-      <td style="color:var(--text-muted); font-size:11px; padding:8px 12px; white-space:nowrap;">${r.time}</td>
-      <td style="padding:8px 12px;"><span class="badge ${r.badge}">${r.val}</span></td>
-      <td style="color:var(--text-main); font-size:12px; padding:8px 12px;">${r.desc}</td>
+      <td style="color:var(--text-muted); font-size:11px; padding:8px 12px; white-space:nowrap;">${formatRelativeTime(e.t)}</td>
+      <td style="padding:8px 12px;"><span class="badge ${e.badge}">${escapeHtml(e.val)}</span></td>
+      <td style="color:var(--text-main); font-size:12px; padding:8px 12px;">${escapeHtml(e.desc)}</td>
     </tr>
   `).join('');
 }
 
-// =========================================================================
+function formatRelativeTime(timestamp) {
+  if (!timestamp) return '--';
+  const diffSec = Math.round((Date.now() - timestamp) / 1000);
+  if (diffSec < 5) return "À l'instant";
+  if (diffSec < 60) return `Il y a ${diffSec}s`;
+  const diffMin = Math.round(diffSec / 60);
+  if (diffMin < 60) return `Il y a ${diffMin} min`;
+  const diffH = Math.round(diffMin / 60);
+  if (diffH < 24) return `Il y a ${diffH}h`;
+  const d = new Date(timestamp);
+  return `${d.toLocaleDateString()} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+}
+
 // GESTIONNAIRE DE MATÉRIEL (HARDWARE DEVICES)
 // =========================================================================
 async function loadDevices() {
@@ -1547,7 +1802,7 @@ async function loadDevices() {
     if (data && Array.isArray(data.devices)) {
       devicesList = data.devices;
       localStorage.setItem('van_devices', JSON.stringify(devicesList));
-      checkPirDetectionLog(devicesList);
+      recordDeviceTelemetry(devicesList);
       renderDevicesTable();
       updateGlobalStats();
       if (typeof populateAutoDropdowns === 'function') populateAutoDropdowns();
@@ -1561,9 +1816,9 @@ async function loadDevices() {
       } catch (e) {}
     } else {
       devicesList = [
-        { id: 1, name: "Lumière Principale", category: "ACTUATOR", mode: "OUTPUT_RELAY", gpio: 18, voltage: "12V", state: 1, value: 1 },
-        { id: 2, name: "Détecteur Mouvement", category: "SENSOR", mode: "INPUT_PIR", gpio: 19, voltage: "5V", state: 0, value: 0 },
-        { id: 3, name: "Variateur Spot LED", category: "ACTUATOR", mode: "OUTPUT_PWM", gpio: 23, voltage: "12V", state: 1, value: 70 }
+        { id: 1, name: "Lumière Principale", category: "ACTUATOR", mode: "OUTPUT_RELAY", gpio: 18, voltage: "12V", state: 1, value: 1, inverted: false },
+        { id: 2, name: "Détecteur Mouvement", category: "SENSOR", mode: "INPUT_PIR", gpio: 19, voltage: "5V", state: 0, value: 0, inverted: false },
+        { id: 3, name: "Variateur Spot LED", category: "ACTUATOR", mode: "OUTPUT_PWM", gpio: 23, voltage: "12V", state: 1, value: 70, inverted: false }
       ];
       localStorage.setItem('van_devices', JSON.stringify(devicesList));
     }
@@ -1583,7 +1838,7 @@ function renderDevicesTable() {
   if (devicesList.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="${isUser ? 5 : 7}" style="text-align:center; padding:35px 20px; color:var(--text-muted); font-size:13px;">
+        <td colspan="${isUser ? 5 : 8}" style="text-align:center; padding:35px 20px; color:var(--text-muted); font-size:13px;">
           ${isUser ? "Aucun équipement déclaré." : t('empty_devices', "Aucun équipement déclaré. Cliquez sur « Ajouter un équipement » pour commencer.")}
         </td>
       </tr>
@@ -1628,22 +1883,30 @@ function renderDevicesTable() {
     const catBadge = isActuator ? 'badge-actuator' : 'badge-sensor';
     const catLabel = isActuator ? t('badge_actuator', 'Actionneur') : t('badge_sensor', 'Capteur');
 
+    const logicHtml = isUser ? '' : `
+      <td class="col-center col-admin-only">
+        <button type="button" class="btn-logic ${dev.inverted ? 'btn-logic-inverted' : 'btn-logic-normal'}" onclick="toggleDeviceLogic(${dev.id})" title="${dev.inverted ? t('title_logic_inverted') : t('title_logic_normal')}">
+          ${dev.inverted ? t('logic_inverted', 'Inversée') : t('logic_normal', 'Normale')}
+        </button>
+      </td>
+    `;
+
     const toggleHtml = isUser
-      ? `<label class="toggle-switch" title="Lecture seule (Compte utilisateur)">
+      ? `<label class="toggle-switch" title="${t('title_readonly_user', 'Lecture seule (Compte utilisateur)')}">
           <input type="checkbox" ${dev.enabled !== false ? 'checked' : ''} disabled style="cursor:not-allowed;">
           <span class="slider" style="opacity:0.6; cursor:not-allowed;"></span>
         </label>`
-      : `<label class="toggle-switch" title="Activer ou désactiver la prise en compte sur la carte et les automatisations">
+      : `<label class="toggle-switch" title="${t('title_toggle_enabled', 'Activer ou désactiver la prise en compte sur la carte et les automatisations')}">
           <input type="checkbox" ${dev.enabled !== false ? 'checked' : ''} onchange="toggleDeviceEnabled(${dev.id}, this.checked)">
           <span class="slider"></span>
         </label>`;
 
     const actionsHtml = isUser
-      ? `<button class="btn-outline-sm" onclick="triggerDeviceTestPulse(${dev.id})" title="Tester 3s">Tester</button>`
+      ? `<button class="btn-outline-sm" onclick="triggerDeviceTestPulse(${dev.id})" title="${t('btn_test', 'Tester')}">${t('btn_test', 'Tester')}</button>`
       : `
           <button class="btn-outline-sm" onclick="openEditDeviceModal(${dev.id})" title="${t('btn_edit', 'Modifier')}">${t('btn_edit', 'Modifier')}</button>
-          <button class="btn-outline-sm" onclick="triggerDeviceTestPulse(${dev.id})" title="Tester 3s">Tester</button>
-          <button class="btn-outline-sm" onclick="openWizardForExistingDevice(${dev.id})" title="Câblage">Câbler</button>
+          <button class="btn-outline-sm" onclick="triggerDeviceTestPulse(${dev.id})" title="${t('btn_test', 'Tester')}">${t('btn_test', 'Tester')}</button>
+          <button class="btn-outline-sm" onclick="openWizardForExistingDevice(${dev.id})" title="${t('btn_wire', 'Câblage')}">${t('btn_wire', 'Câbler')}</button>
           <button class="btn-danger-sm" onclick="deleteDevice(${dev.id})" title="${t('btn_delete', 'Supprimer')}">
             <svg viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/></svg>
           </button>
@@ -1661,6 +1924,7 @@ ${isUser ? '' : `
         <td class="col-center"><span class="badge badge-gpio">GPIO ${dev.gpio}</span></td>
         `}
         <td class="col-center"><span class="badge ${stateBadge}">${stateLabel}</span></td>
+        ${logicHtml}
         <td class="col-center">${toggleHtml}</td>
         <td class="col-right">${actionsHtml}</td>
       </tr>
@@ -1668,6 +1932,34 @@ ${isUser ? '' : `
   });
 
   tbody.innerHTML = html;
+}
+
+async function toggleDeviceLogic(id) {
+  if (getCurrentUserRole() === 'user') return;
+  const dev = devicesList.find(d => d.id === id);
+  if (!dev) return;
+
+  const newInverted = !dev.inverted;
+  dev.inverted = newInverted;
+
+  // WebSocket direct
+  if (isWsConnected && socket && socket.readyState === WebSocket.OPEN) {
+    try {
+      socket.send(JSON.stringify({ cmd: 'setInverted', id: dev.id, inverted: newInverted }));
+    } catch(e) {}
+  }
+
+  // REST API
+  try {
+    await fetchApi('/api/devices/toggle-inverted', 'POST', { id: dev.id, inverted: newInverted });
+  } catch (e) {
+    console.warn("toggle-inverted fallback local:", e);
+  }
+
+  localStorage.setItem('van_devices', JSON.stringify(devicesList));
+  renderDevicesTable();
+  const label = newInverted ? t('logic_inverted', 'Inversée') : t('logic_normal', 'Normale');
+  showToast(t('toast_logic_set').replace('{name}', dev.name).replace('{label}', label), 'info');
 }
 
 async function toggleDeviceEnabled(id, isChecked) {
@@ -1728,31 +2020,60 @@ async function toggleAuxDevice(id) {
   const dev = devicesList.find(d => d.id === id);
   if (!dev) return;
   const newState = dev.state > 0 ? 0 : 1;
+  const val = (dev.mode && dev.mode.includes('PWM')) ? (newState > 0 ? (dev.value || 100) : 0) : (newState ? 100 : 0);
   dev.state = newState;
+  dev.value = val;
   renderDevicesTable();
   updateGlobalStats();
   localStorage.setItem('van_devices', JSON.stringify(devicesList));
+
+  // WebSocket direct
+  if (isWsConnected && socket && socket.readyState === WebSocket.OPEN) {
+    try {
+      socket.send(JSON.stringify({ cmd: 'setState', id: dev.id, state: newState, value: val }));
+    } catch(e) {}
+  }
+
+  // REST API
   try {
-    await fetchApi('/api/devices/control', 'POST', { id, state: newState });
+    await fetchApi('/api/devices/set-state', 'POST', { id: dev.id, state: newState, value: val });
   } catch (e) {
-    console.warn("toggleAuxDevice hors-ligne/FiveServer", e);
+    try {
+      await fetchApi('/api/devices/control', 'POST', { id: dev.id, state: newState, value: val });
+    } catch (e2) {
+      console.warn("toggleAuxDevice error:", e2);
+    }
   }
 }
 
 async function updateAuxPwm(id, val) {
-  const duty = parseInt(val, 10);
+  const duty = Math.max(0, Math.min(100, parseInt(val, 10) || 0));
   const dev = devicesList.find(d => d.id === id);
+  const state = duty > 0 ? 1 : 0;
   if (dev) {
     dev.value = duty;
-    dev.state = duty > 0 ? 1 : 0;
+    dev.state = state;
     renderDevicesTable();
     updateGlobalStats();
     localStorage.setItem('van_devices', JSON.stringify(devicesList));
   }
+
+  // WebSocket direct
+  if (isWsConnected && socket && socket.readyState === WebSocket.OPEN) {
+    try {
+      socket.send(JSON.stringify({ cmd: 'setState', id, state, value: duty }));
+    } catch(e) {}
+  }
+
+  // REST API
   try {
-    await fetchApi('/api/devices/control', 'POST', { id, value: duty, state: duty > 0 ? 1 : 0 });
+    await fetchApi('/api/devices/set-state', 'POST', { id, state, value: duty });
   } catch (e) {
-    console.warn("updateAuxPwm hors-ligne/FiveServer", e);
+    try {
+      await fetchApi('/api/devices/control', 'POST', { id, state, value: duty });
+    } catch (e2) {
+      console.warn("updateAuxPwm error:", e2);
+    }
   }
 }
 
@@ -1784,6 +2105,7 @@ async function triggerDeviceTestPulse(id) {
 // =========================================================================
 function openUnifiedAddModal() {
   if (getCurrentUserRole() === 'user') return;
+  applyTranslations();
   const modal = document.getElementById('unified-add-modal');
   if (modal) modal.classList.add('active');
 }
@@ -1799,6 +2121,7 @@ function selectAddType(type) {
 
 function openAddDeviceModal(preselectedCategory = 'ACTUATOR') {
   if (getCurrentUserRole() === 'user') return;
+  applyTranslations();
   editingDeviceId = null;
   const title = document.getElementById('modal-title');
   if (title) title.innerText = t('modal_dev_title', "1. Déclarer un équipement");
@@ -1829,6 +2152,7 @@ function openAddDeviceModal(preselectedCategory = 'ACTUATOR') {
 
 async function openEditDeviceModal(id) {
   if (getCurrentUserRole() === 'user') return;
+  applyTranslations();
   const dev = devicesList.find(d => d.id === id);
   if (!dev) return;
 
@@ -1923,6 +2247,7 @@ async function saveDeviceFromModal() {
     gpio = parseInt(gpio, 10);
   }
 
+  const existingDev = devicesList.find(d => d.id === editingDeviceId);
   const payload = {
     id: editingDeviceId || 0,
     name: name,
@@ -1931,7 +2256,8 @@ async function saveDeviceFromModal() {
     mode: mode,
     pwmWiringType: wiringType,
     gpio: gpio,
-    isCore: false
+    isCore: false,
+    inverted: existingDev ? (existingDev.inverted || false) : false
   };
 
   try {
@@ -2034,11 +2360,14 @@ function onCategoryChange() {
 }
 
 function updateVoltageOptions() {
-  const cat = document.getElementById('device-category').value;
+  const catEl = document.getElementById('device-category');
+  const cat = catEl ? catEl.value : 'ACTUATOR';
   const modeEl = document.getElementById('device-signal-mode') || document.getElementById('device-mode');
   const mode = modeEl ? modeEl.value : '';
   const voltSelect = document.getElementById('device-voltage');
   if (!voltSelect) return;
+
+  const prevVal = voltSelect.value;
 
   if (cat === 'ACTUATOR') {
     voltSelect.innerHTML = (currentLang === 'en') ? `
@@ -2056,35 +2385,75 @@ function updateVoltageOptions() {
     `;
     voltSelect.disabled = false;
   } else {
-    if (mode === 'INPUT_DIGITAL' || mode === 'INPUT_ADC_NTC') {
-      voltSelect.innerHTML = `<option value="3.3V">${currentLang === 'en' ? 'Passive (ESP32 3.3V Pull-up)' : (currentLang === 'es' ? 'Pasivo (ESP32 3.3V Pull-up)' : 'Passif (ESP32 3.3V Pull-up)')}</option>`;
-      voltSelect.disabled = true;
+    if (mode === 'INPUT_DIGITAL') {
+      voltSelect.innerHTML = (currentLang === 'en') ? `
+        <option value="3.3V">3.3V DC (Passive Pull-up ESP32 - Recommended)</option>
+        <option value="5V">5V DC (Active sensor / 5V signal)</option>
+        <option value="12V">12V DC (12V Sensor)</option>
+      ` : (currentLang === 'es') ? `
+        <option value="3.3V">3.3V DC (Pasivo Pull-up ESP32 - Recomendado)</option>
+        <option value="5V">5V DC (Sensor activo / señal 5V)</option>
+        <option value="12V">12V DC (Sensor 12V)</option>
+      ` : `
+        <option value="3.3V">3.3V DC (Passif Pull-up ESP32 - Recommandé)</option>
+        <option value="5V">5V DC (Capteur actif / signal 5V)</option>
+        <option value="12V">12V DC (Capteur 12V)</option>
+      `;
+      voltSelect.disabled = false;
+    } else if (mode === 'INPUT_ADC_NTC') {
+      voltSelect.innerHTML = (currentLang === 'en') ? `
+        <option value="3.3V">3.3V DC (ESP32 Reference - Recommended)</option>
+        <option value="5V">5V DC (External 5V rail)</option>
+      ` : (currentLang === 'es') ? `
+        <option value="3.3V">3.3V DC (Referencia ESP32 - Recomendado)</option>
+        <option value="5V">5V DC (Carril externo 5V)</option>
+      ` : `
+        <option value="3.3V">3.3V DC (Référence ESP32 3.3V - Recommandé)</option>
+        <option value="5V">5V DC (Rail externe 5V)</option>
+      `;
+      voltSelect.disabled = false;
     } else if (mode === 'INPUT_PIR') {
       voltSelect.innerHTML = (currentLang === 'en') ? `
         <option value="5V">5V DC / VIN (HC-SR501 Module)</option>
         <option value="3.3V">3.3V DC (AM312 Low Voltage Module)</option>
+        <option value="12V">12V DC (12V Motion Sensor)</option>
       ` : (currentLang === 'es') ? `
         <option value="5V">5V DC / VIN (Módulo HC-SR501)</option>
         <option value="3.3V">3.3V DC (Módulo AM312 bajo voltaje)</option>
+        <option value="12V">12V DC (Sensor movimiento 12V)</option>
       ` : `
         <option value="5V">5V DC / VIN (Module HC-SR501)</option>
         <option value="3.3V">3.3V DC (Module AM312 basse tension)</option>
+        <option value="12V">12V DC (Détecteur 12V)</option>
       `;
       voltSelect.disabled = false;
     } else {
       voltSelect.innerHTML = (currentLang === 'en') ? `
-        <option value="3.3V">3.3V DC (Recommended ESP32)</option>
-        <option value="5V">5V DC (VIN)</option>
+        <option value="3.3V">3.3V DC (ESP32 Native 0-3.3V - Recommended)</option>
+        <option value="5V">5V DC (VIN / 5V Sensor)</option>
+        <option value="12V">12V DC (12V Sensor)</option>
       ` : (currentLang === 'es') ? `
-        <option value="3.3V">3.3V DC (Recomendado ESP32)</option>
-        <option value="5V">5V DC (VIN)</option>
+        <option value="3.3V">3.3V DC (Nativo ESP32 0-3.3V - Recomendado)</option>
+        <option value="5V">5V DC (VIN / Sensor 5V)</option>
+        <option value="12V">12V DC (Sensor 12V)</option>
       ` : `
-        <option value="3.3V">3.3V DC (Recommandé ESP32)</option>
-        <option value="5V">5V DC (VIN)</option>
+        <option value="3.3V">3.3V DC (Natif ESP32 0-3.3V - Recommandé)</option>
+        <option value="5V">5V DC (VIN / Capteur 5V)</option>
+        <option value="12V">12V DC (Capteur 12V)</option>
       `;
       voltSelect.disabled = false;
     }
   }
+
+  if (prevVal && Array.from(voltSelect.options).some(o => o.value === prevVal)) {
+    voltSelect.value = prevVal;
+  }
+  onVoltageChange();
+}
+
+function onVoltageChange() {
+  const hintEl = document.getElementById('device-voltage-hint');
+  if (hintEl) hintEl.innerHTML = '';
 }
 
 function onSignalModeChange() {
@@ -2092,7 +2461,7 @@ function onSignalModeChange() {
   const mode = modeEl ? modeEl.value : '';
   const pwmRow = document.getElementById('device-pwm-wiring-group') || document.getElementById('pwm-wiring-row');
   if (pwmRow) {
-    pwmRow.style.display = 'none'; // Les 4 options intègrent déjà le choix 2 fils / 3 fils directement !
+    pwmRow.style.display = 'none';
   }
   updateVoltageOptions();
   populatePinSelect();
@@ -2100,40 +2469,86 @@ function onSignalModeChange() {
 
 function onPwmWiringChange() {}
 
+const ESP32_HARDWARE_PINS = [
+  { gpio: 4, label: "D4", adc1: false, inputOnly: false },
+  { gpio: 5, label: "D5", adc1: false, inputOnly: false },
+  { gpio: 13, label: "D13", adc1: false, inputOnly: false },
+  { gpio: 14, label: "D14", adc1: false, inputOnly: false },
+  { gpio: 16, label: "RX2", adc1: false, inputOnly: false },
+  { gpio: 17, label: "TX2", adc1: false, inputOnly: false },
+  { gpio: 18, label: "SCK", adc1: false, inputOnly: false },
+  { gpio: 19, label: "MISO", adc1: false, inputOnly: false },
+  { gpio: 21, label: "SDA", adc1: false, inputOnly: false },
+  { gpio: 22, label: "SCL", adc1: false, inputOnly: false },
+  { gpio: 23, label: "MOSI", adc1: false, inputOnly: false },
+  { gpio: 25, label: "DAC1", adc1: false, inputOnly: false },
+  { gpio: 26, label: "DAC2", adc1: false, inputOnly: false },
+  { gpio: 27, label: "D27", adc1: false, inputOnly: false },
+  { gpio: 32, label: "ADC1_CH4", adc1: true, inputOnly: false },
+  { gpio: 33, label: "ADC1_CH5", adc1: true, inputOnly: false },
+  { gpio: 34, label: "ADC1_CH6 (In)", adc1: true, inputOnly: true },
+  { gpio: 35, label: "ADC1_CH7 (In)", adc1: true, inputOnly: true },
+  { gpio: 36, label: "VP / ADC1_CH0 (In)", adc1: true, inputOnly: true },
+  { gpio: 39, label: "VN / ADC1_CH3 (In)", adc1: true, inputOnly: true }
+];
+
 async function populatePinSelect() {
   const pinSelect = document.getElementById('device-gpio');
   if (!pinSelect) return;
 
+  const prevSelected = pinSelect.value;
   const modeEl = document.getElementById('device-signal-mode') || document.getElementById('device-mode');
   const mode = modeEl ? modeEl.value : '';
-  pinSelect.innerHTML = `<option value="auto">Attribution automatique optimale par l'ESP32</option>`;
+  const isActuator = mode.startsWith('OUTPUT');
+  const isAdc = (mode === 'INPUT_ADC' || mode === 'INPUT_ADC_NTC');
+
+  pinSelect.innerHTML = `<option value="auto">${t('opt_gpio_auto', "Attribution automatique optimale par l'ESP32")}</option>`;
+
+  let pinList = ESP32_HARDWARE_PINS.map(p => ({ ...p }));
 
   try {
     const data = await fetchApi('/api/pins');
-    if (data && Array.isArray(data.pins)) {
-      data.pins.forEach(p => {
-        const isFree = (p.used_by === null || p.used_by === undefined || p.used_by === '');
-        let allowed = true;
-        if ((mode === 'INPUT_ADC' || mode === 'INPUT_ADC_NTC') && !p.adc1) allowed = false;
-        if (p.input_only && mode && mode.startsWith('OUTPUT')) allowed = false;
-
-        if (allowed) {
-          const opt = document.createElement('option');
-          opt.value = p.gpio;
-          opt.innerText = `GPIO ${p.gpio} - ${p.label || ''} ${isFree ? '(Libre)' : '(Occupé)'}`;
-          if (!isFree) opt.style.color = 'var(--text-muted)';
-          pinSelect.appendChild(opt);
-        }
-      });
+    if (data && Array.isArray(data.pins) && data.pins.length > 0) {
+      if (typeof data.pins[0] === 'object' && data.pins[0] !== null) {
+        pinList = data.pins.map(p => ({
+          gpio: p.gpio,
+          label: p.label || `GPIO ${p.gpio}`,
+          adc1: !!p.adc1,
+          inputOnly: !!p.input_only,
+          usedBy: p.used_by || null
+        }));
+      }
     }
-  } catch(e) {
-    const commonPins = [4, 5, 12, 13, 14, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33, 34, 35];
-    commonPins.forEach(gpio => {
-      const opt = document.createElement('option');
-      opt.value = gpio;
-      opt.innerText = `GPIO ${gpio}`;
-      pinSelect.appendChild(opt);
-    });
+  } catch (e) {
+    // Keep local fallback pinList
+  }
+
+  pinList.forEach(p => {
+    if (isActuator && p.inputOnly) return;
+    if (isAdc && !p.adc1) return;
+
+    const usedDev = devicesList.find(d => Number(d.gpio) === Number(p.gpio));
+    const isCurrentDev = editingDeviceId && usedDev && Number(usedDev.id) === Number(editingDeviceId);
+    const isOccupied = usedDev && !isCurrentDev;
+
+    const opt = document.createElement('option');
+    opt.value = String(p.gpio);
+
+    let suffix = ' (Libre)';
+    if (isCurrentDev) {
+      suffix = ' (Actuel)';
+    } else if (isOccupied) {
+      suffix = ` (Occupé : ${usedDev.name || '#' + usedDev.id})`;
+      opt.disabled = true;
+      opt.style.color = 'var(--text-muted, #64748b)';
+    }
+
+    opt.innerText = `GPIO ${p.gpio} - ${p.label}${suffix}`;
+    pinSelect.appendChild(opt);
+  });
+
+  if (prevSelected && Array.from(pinSelect.options).some(o => o.value === prevSelected)) {
+    pinSelect.value = prevSelected;
   }
 }
 
@@ -3277,6 +3692,7 @@ let wizardDelayTimer = null;
 let wizardActTimer = null;
 
 async function openWizardModal() {
+  applyTranslations();
   const modal = document.getElementById('wizard-modal');
   const title = document.getElementById('wizard-title');
   const subtitle = document.getElementById('wizard-subtitle');
@@ -3679,7 +4095,8 @@ async function finishAndActivateWizard() {
     pwmWiringType: wizardState.pwmWiringType || wizardState.wiringType || 'MOSFET_POWER',
     gpio: gpioNum,
     isCore: wizardState.isCore || false,
-    enabled: wizardState.enabled !== false
+    enabled: wizardState.enabled !== false,
+    inverted: wizardState.inverted || false
   };
 
   try {
@@ -3819,8 +4236,12 @@ function getActuatorActionOptions(dev) {
 function openAddAutomationModal() {
   editingAutomationRuleId = null;
 
+  applyTranslations();
+
   const titleEl = document.getElementById('automation-modal-title');
   if (titleEl) titleEl.innerText = t('modal_auto_add_title', "Ajouter une automatisation");
+  const subEl = document.getElementById('automation-modal-sub');
+  if (subEl) subEl.innerText = t('modal_auto_sub', "Définissez vos déclencheurs et les actions à exécuter");
   const saveBtn = document.getElementById('btn-save-automation');
   if (saveBtn) saveBtn.innerText = t('btn_save', "Enregistrer");
 
@@ -3845,8 +4266,12 @@ function openEditAutomationModal(ruleId) {
 
   editingAutomationRuleId = rule.id;
 
+  applyTranslations();
+
   const titleEl = document.getElementById('automation-modal-title');
   if (titleEl) titleEl.innerText = t('modal_auto_edit_title', "Modifier l'automatisation");
+  const subEl = document.getElementById('automation-modal-sub');
+  if (subEl) subEl.innerText = t('modal_auto_sub', "Définissez vos déclencheurs et les actions à exécuter");
   const saveBtn = document.getElementById('btn-save-automation');
   if (saveBtn) saveBtn.innerText = t('btn_update', "Mettre à jour");
 
@@ -3896,7 +4321,7 @@ function addConditionRow(data = null) {
 
   const sensors = devicesList.filter(d => d.category === 'SENSOR' || (!d.category && d.mode && d.mode.startsWith('INPUT')) || d.mode === 'OUTPUT_PWM');
   if (sensors.length === 0) {
-    showToast("Aucun capteur disponible. Ajoutez d'abord un capteur dans le menu Matériel.", "warning");
+    showToast(t('toast_no_sensor_avail', "Aucun capteur disponible. Ajoutez d'abord un capteur dans le menu Matériel."), "warning");
     return;
   }
 
@@ -4043,7 +4468,7 @@ function addConditionRow(data = null) {
   const delBtn = document.createElement('button');
   delBtn.type = 'button';
   delBtn.className = 'btn-danger-sm';
-  delBtn.title = "Supprimer cette condition";
+  delBtn.title = t('btn_delete_condition', "Supprimer cette condition");
   delBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/></svg>`;
   delBtn.onclick = () => {
     if (container.querySelectorAll('.modal-condition-row').length > 1) {
@@ -4071,7 +4496,7 @@ function addActionRow(data = null) {
 
   const actuators = devicesList.filter(d => d.category === 'ACTUATOR' || (!d.category && d.mode && d.mode.startsWith('OUTPUT')));
   if (actuators.length === 0) {
-    showToast("Aucun actionneur disponible. Ajoutez d'abord un actionneur dans le menu Matériel.", "warning");
+    showToast(t('toast_no_actuator_avail', "Aucun actionneur disponible. Ajoutez d'abord un actionneur dans le menu Matériel."), "warning");
     return;
   }
 
@@ -4139,7 +4564,7 @@ function addActionRow(data = null) {
   const delBtn = document.createElement('button');
   delBtn.type = 'button';
   delBtn.className = 'btn-danger-sm';
-  delBtn.title = "Supprimer cet actionneur";
+  delBtn.title = t('btn_delete_actuator', "Supprimer cet actionneur");
   delBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/></svg>`;
   delBtn.onclick = () => {
     if (container.querySelectorAll('.modal-action-row').length > 1) {
@@ -4605,12 +5030,12 @@ function renderAutomationTable() {
           <div style="font-weight:700; color:var(--text-light); font-size:13px;">${ruleTitle}</div>
         </td>
         <td class="col-center">
-          <span class="badge" style="background:rgba(45,212,191,0.15); color:var(--cyan-light); font-weight:800; font-size:11px;">SI</span>
+          <span class="badge" style="background:rgba(45,212,191,0.15); color:var(--cyan-light); font-weight:800; font-size:11px;">${t('th_auto_if', 'SI')}</span>
         </td>
         <td>${sourcesHtml}</td>
         <td>${condsHtml}</td>
         <td class="col-center">
-          <span class="badge" style="background:rgba(45,212,191,0.15); color:var(--cyan-light); font-weight:800; font-size:11px;">ALORS</span>
+          <span class="badge" style="background:rgba(45,212,191,0.15); color:var(--cyan-light); font-weight:800; font-size:11px;">${t('th_auto_then', 'ALORS')}</span>
         </td>
         <td>${targetsHtml}</td>
         <td>${actsHtml}</td>
@@ -4621,7 +5046,7 @@ function renderAutomationTable() {
           </label>
         </td>
         <td class="col-right" style="white-space:nowrap;">
-          <button class="btn-outline-sm" onclick="openEditAutomationModal(${rule.id})" title="Modifier cette règle" style="margin-right:6px; padding:6px 9px; color:var(--cyan-light); border-color:rgba(56,189,248,0.4); display:inline-flex; align-items:center; justify-content:center;">
+          <button class="btn-outline-sm" onclick="openEditAutomationModal(${rule.id})" title="${t('btn_edit_rule', 'Modifier cette règle')}" style="margin-right:6px; padding:6px 9px; color:var(--cyan-light); border-color:rgba(56,189,248,0.4); display:inline-flex; align-items:center; justify-content:center;">
             <svg viewBox="0 0 24 24" style="width:14px; height:14px; fill:currentColor;"><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.13,5.12L18.88,8.87M3,17.25V21H6.75L17.81,9.94L14.06,6.19L3,17.25Z"/></svg>
           </button>
           <button class="btn-danger-sm" onclick="deleteAutomationRule(${rule.id})" title="${t('btn_delete', 'Supprimer')}">
@@ -4676,10 +5101,47 @@ async function loadWifiStatus() {
   try {
     const data = await fetchApi('/api/wifi/status');
     if (data) {
-      const staIp = document.getElementById('wifi-sta-ip');
-      const apIp = document.getElementById('wifi-ap-ip');
-      if (staIp) staIp.innerText = data.sta_ip || 'Non connecté';
-      if (apIp) apIp.innerText = data.ap_ip || '192.168.4.1';
+      const staInfo = document.getElementById('wifi-info-sta');
+      const apInfo = document.getElementById('wifi-info-ap');
+      const badge = document.getElementById('wifi-status-badge');
+
+      if (apInfo) {
+        const apSsid = data.ap_ssid || 'Van-Assistant-Local';
+        const apIp = data.ap_ip || '192.168.4.1';
+        apInfo.innerText = `${apSsid} (${apIp})`;
+      }
+
+      if (staInfo) {
+        if (data.connected && data.ssid) {
+          staInfo.innerText = `${data.ssid} (${data.ip || 'Connecté'})`;
+          staInfo.style.color = 'var(--success)';
+        } else if (data.status === 'connecting') {
+          staInfo.innerText = `${t('wifi_btn_connecting', 'Connexion en cours...')} (${data.ssid || 'Station'})`;
+          staInfo.style.color = 'var(--cyan-light)';
+        } else {
+          staInfo.innerText = 'Mode autonome (Non connecté)';
+          staInfo.style.color = 'var(--text-muted)';
+        }
+      }
+
+      if (badge) {
+        if (data.connected) {
+          badge.innerText = 'Station connectée';
+          badge.style.background = 'rgba(52, 211, 153, 0.15)';
+          badge.style.color = 'var(--success)';
+          badge.style.border = '1px solid var(--success)';
+        } else {
+          badge.innerText = 'Point d\'accès local';
+          badge.style.background = 'rgba(56, 189, 248, 0.15)';
+          badge.style.color = 'var(--cyan-light)';
+          badge.style.border = '1px solid var(--cyan-light)';
+        }
+      }
+
+      const ssidInput = document.getElementById('wifi-input-ssid');
+      if (ssidInput && !ssidInput.value && data.ssid) {
+        ssidInput.value = data.ssid;
+      }
     }
   } catch (e) {
     console.warn("loadWifiStatus err", e);
@@ -4688,62 +5150,119 @@ async function loadWifiStatus() {
 
 async function scanWifiNetworks() {
   const btn = document.getElementById('btn-wifi-scan');
-  const select = document.getElementById('wifi-networks-select');
+  const btnText = document.getElementById('wifi-scan-btn-text');
+  const select = document.getElementById('wifi-scan-select');
   if (btn) btn.disabled = true;
+  if (btnText) btnText.innerText = t('wifi_btn_scanning', 'Recherche...');
+
+  if (select) {
+    select.innerHTML = `<option value="">-- ${t('wifi_btn_scanning', 'Recherche des réseaux en cours...')} --</option>`;
+  }
 
   try {
-    const data = await fetchApi('/api/wifi/scan');
-    if (data && Array.isArray(data.networks)) {
-      if (select) {
-        select.innerHTML = `<option value="">-- ${t('wifi_select_placeholder', 'Sélectionner un réseau')} (${data.networks.length}) --</option>`;
+    // 1. Déclencher un scan Wi-Fi asynchrone
+    let data = await fetchApi('/api/wifi/scan?start=1');
+
+    // 2. Si le scan est en cours ("scanning"), interroger jusqu'à complétion (max ~8 secondes)
+    let attempts = 0;
+    while (data && data.status === 'scanning' && attempts < 8) {
+      await new Promise(r => setTimeout(r, 1000));
+      attempts++;
+      data = await fetchApi('/api/wifi/scan');
+    }
+
+    const count = (data && Array.isArray(data.networks)) ? data.networks.length : 0;
+
+    if (select) {
+      if (count === 0) {
+        select.innerHTML = `<option value="">-- Aucun réseau Wi-Fi détecté (0) --</option>`;
+      } else {
+        select.innerHTML = `<option value="">-- ${t('wifi_select_placeholder', 'Sélectionnez un réseau détecté')} (${count}) --</option>`;
         data.networks.forEach(net => {
           const opt = document.createElement('option');
           opt.value = net.ssid;
-          opt.innerText = `${net.ssid} (${net.rssi} dBm)`;
+          const lockIcon = net.secure ? ' 🔒' : '';
+          opt.innerText = `${net.ssid} (${net.rssi} dBm)${lockIcon}`;
           select.appendChild(opt);
         });
       }
-      showToast(t('toast_wifi_scan_done', "Réseaux Wi-Fi détectés."), "info");
     }
+
+    // Toujours renvoyer un chiffre exact dans la notification
+    const msg = t('toast_wifi_scan_done', '{count} réseau(x) Wi-Fi détecté(s)').replace('{count}', count);
+    showToast(msg, count > 0 ? "success" : "info");
+
   } catch (e) {
-    showToast("Erreur scan Wi-Fi", "error");
+    console.warn("scanWifiNetworks err", e);
+    // Simulation / fallback hors ligne (FiveServer)
+    if (select) {
+      select.innerHTML = `
+        <option value="">-- Réseaux détectés (Simulation) (3) --</option>
+        <option value="Livebox-Van">Livebox-Van (-55 dBm) 🔒</option>
+        <option value="Partage-4G">Partage-4G (-68 dBm) 🔒</option>
+        <option value="Freebox-Maison">Freebox-Maison (-80 dBm) 🔒</option>
+      `;
+    }
+    showToast("Mode simulation : 3 réseaux Wi-Fi affichés", "info");
   } finally {
     if (btn) btn.disabled = false;
+    if (btnText) btnText.innerText = t('wifi_btn_scan', 'Scanner les réseaux');
   }
 }
 
 function onWifiSelectedFromScan(ssid) {
   if (!ssid) return;
-  const ssidInput = document.getElementById('wifi-ssid');
+  const ssidInput = document.getElementById('wifi-input-ssid');
   if (ssidInput) ssidInput.value = ssid;
+  const passInput = document.getElementById('wifi-input-pass');
+  if (passInput) passInput.focus();
 }
 
 async function submitWifiConnect(event) {
-  event.preventDefault();
-  const ssid = document.getElementById('wifi-ssid').value.trim();
-  const pass = document.getElementById('wifi-password').value.trim();
+  if (event && typeof event.preventDefault === 'function') event.preventDefault();
+  const ssidInput = document.getElementById('wifi-input-ssid');
+  const passInput = document.getElementById('wifi-input-pass');
+  const ssid = ssidInput ? ssidInput.value.trim() : '';
+  const pass = passInput ? passInput.value.trim() : '';
 
   if (!ssid) {
-    showToast(t('toast_wifi_ssid_required', "Veuillez saisir un SSID."), "warning");
+    showToast(t('toast_wifi_ssid_required', "Veuillez saisir le nom du réseau Wi-Fi (SSID)."), "warning");
+    if (ssidInput) ssidInput.focus();
     return;
   }
 
+  const btn = document.getElementById('btn-wifi-connect');
+  const btnText = document.getElementById('wifi-connect-btn-text');
+  if (btn) btn.disabled = true;
+  if (btnText) btnText.innerText = t('wifi_btn_connecting', 'Connexion en cours...');
+
   try {
-    showToast(t('toast_wifi_connecting', `Connexion à "${ssid}"...`).replace('{ssid}', ssid), "info");
-    await fetchApi('/api/wifi/connect', 'POST', { ssid, password: pass });
+    showToast(t('toast_wifi_connecting', `Connexion à "${ssid}" en cours. L'AP local reste actif.`).replace('{ssid}', ssid), "info");
+    const res = await fetchApi('/api/wifi/connect', 'POST', { ssid, pass, password: pass });
+    if (res && res.success) {
+      showToast(res.message || "Tentative de connexion en cours...", "success");
+    }
+    setTimeout(loadWifiStatus, 3000);
   } catch (e) {
-    showToast("Erreur connexion Wi-Fi", "error");
+    showToast("Erreur lors de la tentative de connexion Wi-Fi", "danger");
+  } finally {
+    if (btn) btn.disabled = false;
+    if (btnText) btnText.innerText = t('wifi_btn_connect', 'Valider la connexion');
   }
 }
 
 async function forgetWifiNetwork() {
-  if (!confirm(t('toast_wifi_forget_confirm', "Oublier le réseau Wi-Fi ?"))) return;
+  if (!confirm(t('toast_wifi_forget_confirm', "Êtes-vous sûr de vouloir oublier la connexion au réseau du van ?"))) return;
   try {
-    await fetchApi('/api/wifi/forget', 'POST', {});
-    showToast(t('toast_wifi_reset_done', "Réseau oublié."), "success");
+    await fetchApi('/api/wifi/reset', 'POST', {});
+    showToast(t('toast_wifi_reset_done', "Réseau du van oublié. Retour au mode AP local seul."), "success");
+    const ssidInput = document.getElementById('wifi-input-ssid');
+    const passInput = document.getElementById('wifi-input-pass');
+    if (ssidInput) ssidInput.value = '';
+    if (passInput) passInput.value = '';
     await loadWifiStatus();
   } catch (e) {
-    showToast("Erreur", "error");
+    showToast("Erreur réinitialisation Wi-Fi", "danger");
   }
 }
 
@@ -4972,7 +5491,7 @@ function handleIncomingTelemetry(data) {
   } else if ((data.type === 'ALL_DEVICES' || Array.isArray(data.devices)) && Array.isArray(data.devices)) {
     devicesList = data.devices;
     localStorage.setItem('van_devices', JSON.stringify(devicesList));
-    checkPirDetectionLog(devicesList);
+    recordDeviceTelemetry(devicesList);
     renderDevicesTable();
     updateGlobalStats();
     if (typeof populateAutoDropdowns === 'function') populateAutoDropdowns();
@@ -4992,7 +5511,7 @@ async function initApp() {
   if (!deviceRefreshInterval) {
     deviceRefreshInterval = setInterval(() => {
       if (!isWsConnected) loadDevices();
-    }, 5000);
+    }, 3000);
   }
 }
 
